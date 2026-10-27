@@ -1,0 +1,3661 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>إدارة مخزون الاستوديو</title>
+    <meta name="description" content="نظام إدارة مخزون خامات استوديو التصوير وطباعة وتجليد الألبومات - متابعة الكميات والجاهزية التشغيلية" />
+    <meta property="og:title" content="إدارة مخزون الاستوديو" />
+    <meta property="og:description" content="متابعة الكميات والجاهزية التشغيلية ومعدلات نفاد الخامات" />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <!-- Google Fonts: Alexandria & IBM Plex Sans Arabic -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Alexandria:wght@500;600;700;800&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <link rel="icon" type="image/svg+xml" href="icon.svg" />
+    <link rel="apple-touch-icon" href="apple-touch-icon.png" />
+    <link rel="manifest" href="manifest.json" />
+
+    <style>
+      :root {
+        --font-heading: 'Alexandria', sans-serif;
+        --font-body: 'IBM Plex Sans Arabic', system-ui, -apple-system, sans-serif;
+
+        /* Slate & Indigo Luxury Palette */
+        --slate-50: #f8fafc;
+        --slate-100: #f1f5f9;
+        --slate-200: #e2e8f0;
+        --slate-300: #cbd5e1;
+        --slate-400: #94a3b8;
+        --slate-500: #64748b;
+        --slate-600: #475569;
+        --slate-700: #334155;
+        --slate-800: #1e293b;
+        --slate-900: #0f172a;
+
+        --indigo-50: #eef2ff;
+        --indigo-100: #e0e7ff;
+        --indigo-500: #6366f1;
+        --indigo-600: #4f46e5;
+        --indigo-700: #4338ca;
+        --indigo-900: #312e81;
+
+        --emerald-50: #ecfdf5;
+        --emerald-100: #d1fae5;
+        --emerald-500: #10b981;
+        --emerald-600: #059669;
+        --emerald-700: #047857;
+
+        --amber-50: #fffbeb;
+        --amber-100: #fef3c7;
+        --amber-500: #f59e0b;
+        --amber-600: #d97706;
+
+        --rose-50: #fff1f2;
+        --rose-100: #ffe4e6;
+        --rose-500: #f43f5e;
+        --rose-600: #e11d48;
+
+        --bg-page: #f8fafc;
+        --bg-surface: #ffffff;
+        --bg-subtle: #f1f5f9;
+        --border-color: #e2e8f0;
+        --border-focus: #4f46e5;
+
+        --radius-sm: 8px;
+        --radius-md: 12px;
+        --radius-lg: 16px;
+        --radius-xl: 20px;
+        --radius-2xl: 24px;
+        --radius-full: 9999px;
+
+        --shadow-subtle: 0 1px 3px rgba(15, 23, 42, 0.05);
+        --shadow-card: 0 4px 12px -1px rgba(15, 23, 42, 0.06), 0 2px 4px -1px rgba(15, 23, 42, 0.03);
+        --shadow-hover: 0 12px 24px -4px rgba(15, 23, 42, 0.08), 0 4px 8px -2px rgba(15, 23, 42, 0.04);
+        --shadow-glass: 0 25px 50px -12px rgba(15, 23, 42, 0.25);
+
+        --transition-fast: 160ms cubic-bezier(0.4, 0, 0.2, 1);
+        --transition-smooth: 240ms cubic-bezier(0.16, 1, 0.3, 1);
+      }
+
+      *, *::before, *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      html {
+        font-family: var(--font-body);
+        direction: rtl;
+        text-align: right;
+        background-color: var(--bg-page);
+        color: var(--slate-900);
+        font-size: 15px;
+        line-height: 1.6;
+        -webkit-text-size-adjust: 100%;
+      }
+
+      html, body {
+        overflow-x: hidden;
+        max-width: 100vw;
+      }
+
+      body {
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        background: radial-gradient(circle at 10% 10%, rgba(99, 102, 241, 0.035) 0%, transparent 40%),
+                    radial-gradient(circle at 90% 90%, rgba(16, 185, 129, 0.03) 0%, transparent 40%),
+                    var(--bg-page);
+      }
+
+      button, input, select, textarea {
+        font-family: inherit;
+      }
+
+      h1, h2, h3, h4, h5, h6, .font-heading {
+        font-family: var(--font-heading);
+        font-weight: 700;
+        color: var(--slate-900);
+        letter-spacing: -0.015em;
+      }
+
+      .container {
+        width: 100%;
+        max-width: 1280px;
+        margin-left: auto;
+        margin-right: auto;
+        padding-left: 20px;
+        padding-right: 20px;
+      }
+
+      /* ======================================================================
+         Header & Glassmorphism Top Bar
+         ====================================================================== */
+      header.app-header {
+        background: rgba(255, 255, 255, 0.88);
+        backdrop-filter: blur(14px);
+        -webkit-backdrop-filter: blur(14px);
+        border-bottom: 1px solid rgba(226, 232, 240, 0.85);
+        position: sticky;
+        top: 0;
+        z-index: 40;
+        box-shadow: 0 1px 4px rgba(15, 23, 42, 0.03);
+      }
+      .header-content {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 14px 0;
+        gap: 16px;
+      }
+      .brand-box {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+      }
+      .brand-icon-box {
+        width: 44px;
+        height: 44px;
+        background: linear-gradient(135deg, var(--slate-900) 0%, var(--indigo-900) 100%);
+        color: #ffffff;
+        border-radius: var(--radius-md);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 10px rgba(15, 23, 42, 0.15);
+      }
+      .brand-title {
+        font-size: 1.2rem;
+        font-weight: 800;
+        line-height: 1.2;
+        color: var(--slate-900);
+      }
+      .brand-subtitle {
+        font-size: 0.82rem;
+        color: var(--slate-500);
+        display: block;
+        margin-top: 1px;
+      }
+
+      /* Sync Badge */
+      .sync-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        padding: 5px 12px;
+        background: var(--emerald-50);
+        border: 1px solid var(--emerald-100);
+        color: var(--emerald-700);
+        border-radius: var(--radius-full);
+        font-size: 0.82rem;
+        font-weight: 600;
+        transition: var(--transition-fast);
+      }
+      .sync-badge.syncing {
+        background: var(--indigo-50);
+        border-color: var(--indigo-100);
+        color: var(--indigo-700);
+      }
+      .sync-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background-color: var(--emerald-500);
+        box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
+        animation: pulseDot 2s infinite ease-in-out;
+      }
+      .sync-badge.syncing .sync-dot {
+        background-color: var(--indigo-500);
+        box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+      }
+      @keyframes pulseDot {
+        0%, 100% { transform: scale(1); opacity: 1; }
+        50% { transform: scale(1.3); opacity: 0.7; }
+      }
+
+      /* Discreet Floating Trigger for Manager */
+      .discreet-trigger {
+        position: fixed;
+        bottom: 24px;
+        left: 24px;
+        width: 44px;
+        height: 44px;
+        border-radius: var(--radius-full);
+        background: rgba(15, 23, 42, 0.75);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        color: #ffffff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        opacity: 0.35;
+        transition: var(--transition-smooth);
+        z-index: 50;
+        border: 1px solid rgba(255, 255, 255, 0.25);
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+      }
+      .discreet-trigger:hover, .discreet-trigger:focus-visible {
+        opacity: 1;
+        transform: scale(1.1);
+        background: var(--indigo-600);
+        border-color: rgba(255, 255, 255, 0.4);
+        box-shadow: 0 8px 24px rgba(79, 70, 229, 0.35);
+      }
+
+      /* Buttons (Rounded-xl & Luxury Hover) */
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 9px 18px;
+        border-radius: var(--radius-md);
+        font-family: var(--font-body);
+        font-size: 0.92rem;
+        font-weight: 600;
+        cursor: pointer;
+        border: 1px solid transparent;
+        transition: var(--transition-fast);
+        text-decoration: none;
+        white-space: nowrap;
+      }
+      .btn:hover {
+        transform: translateY(-1px);
+      }
+      .btn:active {
+        transform: translateY(0);
+      }
+      .btn-primary {
+        background: linear-gradient(135deg, var(--slate-900) 0%, var(--indigo-900) 100%);
+        color: #ffffff;
+        box-shadow: 0 2px 6px rgba(15, 23, 42, 0.15);
+      }
+      .btn-primary:hover {
+        box-shadow: 0 6px 16px rgba(15, 23, 42, 0.25);
+      }
+      .btn-secondary {
+        background: #ffffff;
+        border-color: var(--slate-300);
+        color: var(--slate-800);
+        box-shadow: var(--shadow-subtle);
+      }
+      .btn-secondary:hover {
+        background: var(--slate-50);
+        border-color: var(--slate-400);
+        color: var(--slate-900);
+      }
+      .btn-whatsapp {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        color: #ffffff;
+        box-shadow: 0 4px 14px rgba(16, 185, 129, 0.3);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+      }
+      .btn-whatsapp:hover {
+        box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+      }
+      .btn-ai-luxury {
+        background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+        color: #ffffff;
+        box-shadow: 0 4px 14px rgba(99, 102, 241, 0.3);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+      }
+      .btn-ai-luxury:hover {
+        box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
+      }
+      .btn-danger {
+        background: var(--rose-600);
+        color: #ffffff;
+      }
+      .btn-danger:hover {
+        background: #be123c;
+      }
+      .btn-sm {
+        padding: 6px 12px;
+        font-size: 0.82rem;
+        border-radius: var(--radius-sm);
+      }
+      .btn-icon {
+        width: 36px;
+        height: 36px;
+        padding: 0;
+        border-radius: var(--radius-sm);
+      }
+
+      /* ======================================================================
+         Wide Traffic Light Status Banner
+         ====================================================================== */
+      .traffic-banner {
+        border-radius: var(--radius-xl);
+        padding: 22px 26px;
+        margin-bottom: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 18px;
+        box-shadow: var(--shadow-card);
+        border: 1px solid transparent;
+        transition: var(--transition-smooth);
+        position: relative;
+        overflow: hidden;
+      }
+      .traffic-banner::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        width: 6px;
+      }
+      .traffic-banner.healthy {
+        background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);
+        border-color: #bbf7d0;
+        color: #065f46;
+      }
+      .traffic-banner.healthy::after {
+        background: var(--emerald-500);
+      }
+      .traffic-banner.warning {
+        background: linear-gradient(135deg, #fffbeb 0%, #fefce8 100%);
+        border-color: #fde68a;
+        color: #92400e;
+      }
+      .traffic-banner.warning::after {
+        background: var(--amber-500);
+      }
+      .traffic-banner.danger {
+        background: linear-gradient(135deg, #fff1f2 0%, #fef2f2 100%);
+        border-color: #fecdd3;
+        color: #9f1239;
+      }
+      .traffic-banner.danger::after {
+        background: var(--rose-500);
+      }
+
+      .traffic-left {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+      }
+      .traffic-icon-glow {
+        width: 52px;
+        height: 52px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.6rem;
+        background: #ffffff;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+        flex-shrink: 0;
+      }
+      .traffic-info h3 {
+        font-size: 1.25rem;
+        font-weight: 800;
+        margin-bottom: 3px;
+      }
+      .traffic-info p {
+        font-size: 0.92rem;
+        opacity: 0.92;
+        line-height: 1.5;
+      }
+
+      /* ======================================================================
+         Smart Stat Cards (0% Money)
+         ====================================================================== */
+      .grid-stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+        gap: 18px;
+        margin-bottom: 24px;
+      }
+      .stat-card {
+        background: var(--bg-surface);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-xl);
+        padding: 20px;
+        box-shadow: var(--shadow-card);
+        position: relative;
+        overflow: hidden;
+        transition: var(--transition-fast);
+      }
+      .stat-card:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-hover);
+      }
+      .stat-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 10px;
+      }
+      .stat-title {
+        font-size: 0.88rem;
+        font-weight: 600;
+        color: var(--slate-500);
+      }
+      .stat-icon {
+        width: 32px;
+        height: 32px;
+        border-radius: var(--radius-sm);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--slate-100);
+        color: var(--slate-700);
+      }
+      .stat-value {
+        font-family: var(--font-heading);
+        font-size: 2.1rem;
+        font-weight: 800;
+        color: var(--slate-900);
+        line-height: 1.1;
+        margin-bottom: 6px;
+      }
+      .stat-subtext {
+        font-size: 0.82rem;
+        color: var(--slate-500);
+      }
+
+      /* ======================================================================
+         Actual Production Capacity Card
+         ====================================================================== */
+      .capacity-card {
+        background: #ffffff;
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-xl);
+        padding: 24px;
+        margin-bottom: 24px;
+        box-shadow: var(--shadow-card);
+      }
+      .capacity-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 18px;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+      .capacity-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 16px;
+      }
+      .capacity-item {
+        background: linear-gradient(135deg, #ffffff 0%, var(--slate-50) 100%);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-lg);
+        padding: 18px;
+        transition: var(--transition-fast);
+      }
+      .capacity-item:hover {
+        border-color: var(--indigo-100);
+        box-shadow: 0 4px 12px rgba(99, 102, 241, 0.05);
+      }
+      .capacity-item-name {
+        font-weight: 700;
+        font-size: 1rem;
+        margin-bottom: 8px;
+        color: var(--slate-800);
+      }
+      .capacity-item-count {
+        font-family: var(--font-heading);
+        font-size: 1.65rem;
+        font-weight: 800;
+        color: var(--slate-900);
+        margin-bottom: 8px;
+        display: flex;
+        align-items: baseline;
+        gap: 6px;
+      }
+      .capacity-item-bottleneck {
+        font-size: 0.82rem;
+        color: #92400e;
+        background: var(--amber-50);
+        border: 1px solid var(--amber-100);
+        padding: 4px 10px;
+        border-radius: var(--radius-sm);
+        display: inline-block;
+        font-weight: 500;
+      }
+
+      /* Priority Urgent Section */
+      .priority-section {
+        background: #ffffff;
+        border: 1px solid #fee2e2;
+        border-radius: var(--radius-xl);
+        padding: 20px 24px;
+        margin-bottom: 24px;
+        box-shadow: var(--shadow-card);
+      }
+      .priority-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 14px;
+      }
+      .priority-title {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-weight: 700;
+        color: var(--rose-600);
+        font-size: 1.05rem;
+      }
+
+      /* ======================================================================
+         Modern Tables & Filters
+         ====================================================================== */
+      .filter-bar {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        align-items: center;
+        justify-content: space-between;
+        background: var(--bg-surface);
+        padding: 16px 20px;
+        border-radius: var(--radius-lg);
+        border: 1px solid var(--border-color);
+        margin-bottom: 18px;
+        box-shadow: var(--shadow-subtle);
+      }
+      .filter-inputs {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        flex: 1;
+      }
+      .form-control {
+        width: 100%;
+        min-height: 42px;
+        padding: 8px 14px;
+        font-size: 0.92rem;
+        font-family: var(--font-body);
+        background: #ffffff;
+        border: 1px solid var(--slate-300);
+        border-radius: var(--radius-md);
+        color: var(--slate-900);
+        transition: var(--transition-fast);
+      }
+      .form-control:focus {
+        outline: none;
+        border-color: var(--indigo-600);
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+      }
+
+      .table-responsive {
+        width: 100%;
+        overflow-x: auto;
+        background: var(--bg-surface);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-xl);
+        box-shadow: var(--shadow-card);
+        margin-bottom: 24px;
+      }
+      .data-table {
+        width: 100%;
+        border-collapse: collapse;
+        text-align: right;
+        font-size: 0.92rem;
+      }
+      .data-table th {
+        background: var(--slate-50);
+        color: var(--slate-600);
+        font-family: var(--font-heading);
+        font-weight: 600;
+        font-size: 0.84rem;
+        padding: 14px 16px;
+        border-bottom: 1px solid var(--border-color);
+        white-space: nowrap;
+      }
+      .data-table td {
+        padding: 14px 16px;
+        border-bottom: 1px solid var(--border-color);
+        vertical-align: middle;
+      }
+      .data-table tr:hover td {
+        background-color: rgba(248, 250, 252, 0.9);
+      }
+
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 4px 10px;
+        border-radius: var(--radius-full);
+        font-size: 0.8rem;
+        font-weight: 600;
+        max-width: 100%;
+        box-sizing: border-box;
+      }
+      #owner-urgent-items {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      #owner-urgent-items .badge {
+        white-space: normal;
+        line-height: 1.4;
+        text-align: right;
+      }
+      .badge-available {
+        background: var(--emerald-50);
+        color: var(--emerald-700);
+        border: 1px solid var(--emerald-100);
+      }
+      .badge-low {
+        background: var(--amber-50);
+        color: var(--amber-600);
+        border: 1px solid var(--amber-100);
+      }
+      .badge-out {
+        background: var(--rose-50);
+        color: var(--rose-600);
+        border: 1px solid var(--rose-100);
+      }
+
+      /* Manager Navigation Tabs */
+      .nav-tabs {
+        display: flex;
+        gap: 6px;
+        border-bottom: 1px solid var(--border-color);
+        margin-bottom: 22px;
+        overflow-x: auto;
+        padding-bottom: 2px;
+      }
+      .nav-tab {
+        padding: 10px 18px;
+        font-size: 0.92rem;
+        font-weight: 600;
+        color: var(--slate-500);
+        background: transparent;
+        border: none;
+        border-bottom: 2.5px solid transparent;
+        cursor: pointer;
+        transition: var(--transition-fast);
+        white-space: nowrap;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        border-radius: var(--radius-md) var(--radius-md) 0 0;
+      }
+      .nav-tab:hover {
+        color: var(--slate-900);
+        background: rgba(241, 245, 249, 0.6);
+      }
+      .nav-tab.active {
+        color: var(--indigo-600);
+        border-bottom-color: var(--indigo-600);
+        background: rgba(238, 242, 255, 0.5);
+      }
+
+      /* ======================================================================
+         Glassmorphism Modals & 6-Digit PIN System
+         ====================================================================== */
+      .modal-backdrop {
+        position: fixed;
+        inset: 0;
+        background: rgba(15, 23, 42, 0.68);
+        backdrop-filter: blur(14px);
+        -webkit-backdrop-filter: blur(14px);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 100;
+        padding: 16px;
+      }
+      .modal-backdrop.active {
+        display: flex;
+      }
+      .modal-box {
+        background: rgba(255, 255, 255, 0.96);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border-radius: var(--radius-2xl);
+        width: 100%;
+        max-width: 520px;
+        box-shadow: var(--shadow-glass);
+        border: 1px solid rgba(255, 255, 255, 0.8);
+        max-height: 90vh;
+        display: flex;
+        flex-direction: column;
+        animation: modalSlideUp 200ms cubic-bezier(0.16, 1, 0.3, 1);
+      }
+      .modal-box.lg {
+        max-width: 740px;
+      }
+      @keyframes modalSlideUp {
+        from { opacity: 0; transform: scale(0.95) translateY(12px); }
+        to { opacity: 1; transform: scale(1) translateY(0); }
+      }
+
+      /* Shake animation for incorrect PIN */
+      .modal-box.shake {
+        animation: shakeAnimation 400ms cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+      }
+      @keyframes shakeAnimation {
+        10%, 90% { transform: translate3d(-3px, 0, 0); }
+        20%, 80% { transform: translate3d(5px, 0, 0); }
+        30%, 50%, 70% { transform: translate3d(-6px, 0, 0); }
+        40%, 60% { transform: translate3d(6px, 0, 0); }
+      }
+
+      .modal-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 18px 24px;
+        border-bottom: 1px solid var(--border-color);
+      }
+      .modal-title {
+        font-size: 1.15rem;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .modal-close {
+        background: transparent;
+        border: none;
+        cursor: pointer;
+        color: var(--slate-400);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 34px;
+        height: 34px;
+        border-radius: var(--radius-sm);
+        transition: var(--transition-fast);
+      }
+      .modal-close:hover {
+        background: var(--slate-100);
+        color: var(--slate-800);
+      }
+      .modal-body {
+        padding: 24px;
+        overflow-y: auto;
+      }
+      .modal-footer {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 12px;
+        padding: 16px 24px;
+        border-top: 1px solid var(--border-color);
+        background: rgba(248, 250, 252, 0.7);
+        border-radius: 0 0 var(--radius-2xl) var(--radius-2xl);
+      }
+
+      /* 6-Digit Discrete PIN Input Styles */
+      .pin-digits-container {
+        display: flex;
+        justify-content: center;
+        gap: 8px;
+        margin: 16px 0 12px 0;
+        direction: ltr; /* keep 1st digit on left */
+      }
+      .pin-cell {
+        width: 44px;
+        height: 52px;
+        text-align: center;
+        font-family: var(--font-heading);
+        font-size: 1.55rem;
+        font-weight: 700;
+        background: #ffffff;
+        border: 2px solid var(--slate-300);
+        border-radius: var(--radius-md);
+        color: var(--slate-900);
+        transition: var(--transition-fast);
+        box-shadow: var(--shadow-subtle);
+      }
+      .pin-cell:focus {
+        outline: none;
+        border-color: var(--indigo-600);
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+        background: var(--indigo-50);
+      }
+      .pin-cell.filled {
+        border-color: var(--slate-700);
+        background: #fafbfc;
+      }
+      .pin-toggle-btn {
+        background: none;
+        border: none;
+        cursor: pointer;
+        color: var(--slate-500);
+        font-size: 0.85rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 10px;
+        border-radius: var(--radius-md);
+        margin-bottom: 10px;
+        transition: var(--transition-fast);
+      }
+      .pin-toggle-btn:hover {
+        color: var(--indigo-600);
+        background: var(--slate-100);
+      }
+
+      .pin-keypad {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+        max-width: 280px;
+        margin: 10px auto 14px auto;
+        direction: rtl;
+      }
+      .pin-key {
+        height: 50px;
+        font-family: var(--font-heading);
+        font-size: 1.25rem;
+        font-weight: 700;
+        background: #ffffff;
+        border: 1px solid var(--slate-200);
+        border-radius: var(--radius-md);
+        cursor: pointer;
+        transition: var(--transition-fast);
+        color: var(--slate-800);
+        box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+      }
+      .pin-key:hover {
+        background: var(--slate-100);
+        border-color: var(--slate-300);
+        transform: translateY(-1px);
+      }
+      .pin-key:active {
+        transform: translateY(0);
+      }
+
+      /* Toast Notification */
+      #toast {
+        position: fixed;
+        bottom: 24px;
+        right: 24px;
+        background: linear-gradient(135deg, var(--slate-900) 0%, var(--indigo-900) 100%);
+        color: #ffffff;
+        padding: 14px 22px;
+        border-radius: var(--radius-lg);
+        font-size: 0.92rem;
+        font-weight: 500;
+        box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.3);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        z-index: 200;
+        opacity: 0;
+        transform: translateY(14px);
+        transition: opacity 220ms ease, transform 220ms ease;
+        pointer-events: none;
+        max-width: 400px;
+      }
+      #toast.show {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      /* Utilities */
+      .text-success { color: var(--emerald-600); }
+      .text-warning { color: var(--amber-600); }
+      .text-danger { color: var(--rose-600); }
+      .text-muted { color: var(--slate-500); }
+      .flex-between { display: flex; align-items: center; justify-content: space-between; }
+      .gap-2 { gap: 8px; }
+      .gap-3 { gap: 12px; }
+      .mb-3 { margin-bottom: 12px; }
+      .mb-4 { margin-bottom: 16px; }
+
+      @media (max-width: 768px) {
+        .header-content { flex-direction: column; align-items: stretch; gap: 10px; padding: 10px 0; }
+        .brand-box { justify-content: flex-start; }
+        .header-content > div:last-child { display: flex; justify-content: space-between; align-items: center; width: 100%; }
+        .traffic-banner { flex-direction: column; align-items: flex-start; padding: 18px 16px; }
+        .traffic-left { flex-direction: column; align-items: flex-start; gap: 10px; width: 100%; }
+        .btn-whatsapp { width: 100%; justify-content: center; }
+        .filter-inputs { flex-direction: column; width: 100%; }
+        .filter-bar { flex-direction: column; align-items: stretch; gap: 12px; padding: 14px; }
+      }
+
+      @media (max-width: 640px) {
+        .container { padding-left: 14px; padding-right: 14px; }
+        .grid-stats { grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 16px; }
+        .stat-card { padding: 14px 12px; }
+        .stat-value { font-size: 1.6rem; }
+        .stat-title { font-size: 0.78rem; }
+        .stat-subtext { font-size: 0.75rem; }
+        .capacity-grid { grid-template-columns: 1fr; }
+        .priority-section { padding: 16px 14px; }
+        
+        /* Mobile Scrollable Tabs with Touch Targets */
+        .nav-tabs {
+          overflow-x: auto;
+          white-space: nowrap;
+          -webkit-overflow-scrolling: touch;
+          padding-bottom: 6px;
+          gap: 6px;
+          scrollbar-width: none;
+        }
+        .nav-tabs::-webkit-scrollbar { display: none; }
+        .nav-tab {
+          flex-shrink: 0;
+          min-height: 44px;
+          padding: 10px 14px;
+          font-size: 0.88rem;
+        }
+
+        /* Mobile Touch-Friendly Buttons */
+        .btn {
+          min-height: 44px;
+          padding: 10px 16px;
+          border-radius: var(--radius-md);
+        }
+        .btn-sm {
+          min-height: 40px;
+          padding: 8px 12px;
+        }
+
+        /* Mobile Responsive PIN Modal */
+        .pin-digits-container {
+          gap: 6px;
+          margin: 14px 0 12px 0;
+        }
+        .pin-cell {
+          width: 40px;
+          height: 48px;
+          font-size: 1.3rem;
+          border-radius: 10px;
+        }
+        .pin-keypad {
+          max-width: 100%;
+          gap: 8px;
+        }
+        .pin-key {
+          height: 52px;
+          font-size: 1.25rem;
+          border-radius: 12px;
+        }
+        .modal-box {
+          width: 95%;
+          max-width: 95%;
+          border-radius: var(--radius-xl);
+        }
+        .modal-body {
+          padding: 16px;
+        }
+        .modal-footer {
+          padding: 12px 16px;
+          flex-wrap: wrap;
+        }
+        .modal-footer .btn {
+          flex: 1;
+        }
+
+        /* Discreet Manager Trigger mobile tap target */
+        .discreet-trigger {
+          bottom: 18px;
+          left: 18px;
+          width: 48px;
+          height: 48px;
+          opacity: 0.45;
+        }
+
+        .table-responsive {
+          border-radius: var(--radius-lg);
+          margin-bottom: 18px;
+        }
+        .data-table th, .data-table td {
+          padding: 10px 12px;
+          font-size: 0.85rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Main App Header with Glassmorphism -->
+    <header class="app-header">
+      <div class="container header-content">
+        <div class="brand-box">
+          <div class="brand-icon-box" title="استوديو التصوير">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+              <circle cx="12" cy="13" r="4"></circle>
+            </svg>
+          </div>
+          <div>
+            <h1 class="brand-title">إدارة مخزون الاستوديو</h1>
+            <span class="brand-subtitle">خامات الطباعة وتجليد الألبومات الفاخرة</span>
+          </div>
+        </div>
+
+        <div style="display:flex; align-items:center; gap:14px;">
+          <div id="sync-status-badge" class="sync-badge" title="حالة الاتصال السحابي">
+            <span class="sync-dot"></span>
+            <span id="sync-text">متصل ومتزامن لحظياً</span>
+          </div>
+
+          <!-- Shown only when in Owner View -->
+          <div id="owner-header-controls" style="display:flex; align-items:center; gap:10px;">
+            <button class="btn btn-primary btn-sm" id="btn-header-login" style="box-shadow: 0 2px 8px rgba(79, 70, 229, 0.25); font-weight:700;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+              </svg>
+              <span>دخول المدير</span>
+            </button>
+          </div>
+
+          <!-- Shown only when in Manager View -->
+          <div id="manager-header-controls" style="display:none; align-items:center; gap:10px;">
+            <button class="btn btn-secondary btn-sm" id="btn-lock-manager">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+              </svg>
+              <span>🔒 قفل وضع المدير (خروج)</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Discreet Floating Trigger on screen edge for entering Manager mode -->
+    <button id="discreet-manager-trigger" class="discreet-trigger" title="دخول المدير" aria-label="دخول المدير">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+        <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+      </svg>
+    </button>
+
+    <!-- ====================================================================== -->
+    <!-- 1) واجهة صاحب المكان (Owner View - Default Landing - Read-only)        -->
+    <!-- ====================================================================== -->
+    <section id="view-owner" style="display:block;">
+      <main class="container" style="padding: 24px 20px 64px 20px;">
+        <!-- Wide Traffic Light Status Banner -->
+        <div id="traffic-status-banner" class="traffic-banner healthy">
+          <div class="traffic-left">
+            <div id="traffic-icon" class="traffic-icon-glow">🟢</div>
+            <div class="traffic-info">
+              <h3 id="traffic-title">المخزون مستقر تماماً</h3>
+              <p id="traffic-desc">جميع الخامات متوفرة بأرصدة آمنة تتجاوز الحد الأدنى المطلوب للاستوديو.</p>
+            </div>
+          </div>
+          <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+            <button class="btn btn-whatsapp" id="btn-whatsapp-share">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
+              </svg>
+              <span>📲 إرسال تقرير الجاهزية لواتساب</span>
+            </button>
+            <button class="btn btn-ai-luxury" id="btn-open-ai-modal">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"></path>
+              </svg>
+              <span>🤖 تحليلات الذكاء الاصطناعي</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Smart Stat Cards Grid (0% Money) -->
+        <div class="grid-stats">
+          <div class="stat-card">
+            <div class="stat-header">
+              <span class="stat-title">جاهزية الإنتاج الفعلي</span>
+              <div class="stat-icon" style="color:var(--indigo-600); background:var(--indigo-50);">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                </svg>
+              </div>
+            </div>
+            <div class="stat-value" id="owner-stat-readiness" style="font-size:1.6rem;">0 ألبوم</div>
+            <span class="stat-subtext" id="owner-stat-readiness-sub">جاهز للتسليم والتقفيل الفوري</span>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-header">
+              <span class="stat-title">مؤشر أمان الاستقرار</span>
+              <div class="stat-icon" style="color:var(--emerald-600); background:var(--emerald-50);">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                </svg>
+              </div>
+            </div>
+            <div class="stat-value text-success" id="owner-stat-stability">100%</div>
+            <span class="stat-subtext" id="owner-stat-stability-sub">أرصدة آمنة فوق الحد الأدنى</span>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-header">
+              <span class="stat-title">أصناف تحتاج متابعة</span>
+              <div class="stat-icon" style="color:var(--amber-600); background:var(--amber-50);">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                  <line x1="12" y1="9" x2="12" y2="13"></line>
+                  <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                </svg>
+              </div>
+            </div>
+            <div class="stat-value text-warning" id="owner-stat-attention">0</div>
+            <span class="stat-subtext" id="owner-stat-attention-sub">قاربت على النفاد أو نفدت</span>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-header">
+              <span class="stat-title">إجمالي الخامات النشطة</span>
+              <div class="stat-icon" style="color:var(--slate-600); background:var(--slate-100);">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="16.5" y1="9.4" x2="7.5" y2="4.21"></line>
+                  <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                  <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                  <line x1="12" y1="22.08" x2="12" y2="12"></line>
+                </svg>
+              </div>
+            </div>
+            <div class="stat-value" id="owner-stat-total">0</div>
+            <span class="stat-subtext">أصناف مسجلة بالمستودع</span>
+          </div>
+        </div>
+
+        <!-- Actual Production Capacity Card -->
+        <div class="capacity-card">
+          <div class="capacity-header">
+            <div>
+              <h3 style="font-size:1.15rem; font-weight:800; display:flex; align-items:center; gap:8px;">
+                <span>📦 قدرة الإنتاج الفعلي الحالية</span>
+              </h3>
+              <p style="font-size:0.86rem; color:var(--slate-500); margin-top:2px;">حساب دقيق لعدد المنتجات الجاهزة للتقفيل والتسليم وفق أرصدة الخامات وعنق الزجاجة</p>
+            </div>
+            <span style="font-size:0.82rem; background:var(--slate-100); padding:4px 10px; border-radius:var(--radius-sm); color:var(--slate-700); font-weight:600;">تحديث آلي</span>
+          </div>
+          <div id="production-capacity-grid" class="capacity-grid">
+            <!-- Rendered dynamically -->
+          </div>
+        </div>
+
+        <!-- Priority Urgent Alert (if any item low/out) -->
+        <div id="owner-urgent-box" class="priority-section" style="display:none;">
+          <div class="priority-header">
+            <div class="priority-title">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="8" x2="12" y2="12"></line>
+                <line x1="12" y1="16" x2="12.01" y2="16"></line>
+              </svg>
+              <span>خامات حرجة توشك على النفاد (تتطلب طلب توريد سريع):</span>
+            </div>
+          </div>
+          <div id="owner-urgent-items" style="display:flex; flex-wrap:wrap; gap:8px;"></div>
+        </div>
+
+        <!-- Filter Bar -->
+        <div class="filter-bar">
+          <div class="filter-inputs">
+            <input type="text" id="owner-search" class="form-control" placeholder="بحث بالاسم أو الكود أو الرف..." style="min-width:260px; flex:1;">
+            <select id="owner-filter-cat" class="form-control" style="width:auto;">
+              <option value="all">كل التصنيفات</option>
+            </select>
+            <select id="owner-filter-status" class="form-control" style="width:auto;">
+              <option value="all">كل الحالات</option>
+              <option value="available">متوفر وآمن</option>
+              <option value="low">قارب على النفاد</option>
+              <option value="out">نفد بالكامل</option>
+            </select>
+          </div>
+          <div style="font-size:0.85rem; color:var(--slate-500); font-weight:600;">
+            واجهة العرض - قراءة فقط
+          </div>
+        </div>
+
+        <!-- Read-only Table Container -->
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>اسم الخامة / الصنف</th>
+                <th>التصنيف</th>
+                <th>المقاس والمواصفات</th>
+                <th>مكان التخزين</th>
+                <th>الرصيد المتوفر</th>
+                <th>حد الأمان</th>
+                <th>الحالة</th>
+              </tr>
+            </thead>
+            <tbody id="owner-table-body">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+        </div>
+      </main>
+    </section>
+
+    <!-- ====================================================================== -->
+    <!-- 2) واجهة المسؤول الكاملة (Manager View)                                -->
+    <!-- ====================================================================== -->
+    <section id="view-manager" style="display:none;">
+      <main class="container" style="padding: 24px 20px 64px 20px;">
+        <!-- Manager Top Navigation Tabs -->
+        <div class="nav-tabs">
+          <button class="nav-tab active" data-tab="tab-items">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+            </svg>
+            <span>إدارة الخامات والمخزون</span>
+          </button>
+          <button class="nav-tab" data-tab="tab-templates">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+              <polyline points="14 2 14 8 20 8"></polyline>
+              <line x1="16" y1="13" x2="8" y2="13"></line>
+              <line x1="16" y1="17" x2="8" y2="17"></line>
+            </svg>
+            <span>قوالب الشغل (خصم الخامات)</span>
+          </button>
+          <button class="nav-tab" data-tab="tab-movements">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="1 4 1 10 7 10"></polyline>
+              <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path>
+            </svg>
+            <span>سجل الحركات والتراجع</span>
+          </button>
+          <button class="nav-tab" data-tab="tab-stocktake">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            <span>الجرد الفعلي والتسوية</span>
+          </button>
+          <button class="nav-tab" data-tab="tab-ai">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"></path>
+            </svg>
+            <span>المحلل الذكي واستشارة AI</span>
+          </button>
+          <button class="nav-tab" data-tab="tab-settings">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="3"></circle>
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+            </svg>
+            <span>الإعدادات والمزامنة</span>
+          </button>
+        </div>
+
+        <!-- TAB 1: Items Management -->
+        <div id="tab-items" class="tab-pane active">
+          <div class="flex-between mb-3" style="flex-wrap:wrap; gap:12px;">
+            <div style="display:flex; gap:10px; flex-wrap:wrap;">
+              <button class="btn btn-primary" id="btn-add-item">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="12" y1="5" x2="12" y2="19"></line>
+                  <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+                <span>إضافة خامة جديدة</span>
+              </button>
+              <button class="btn btn-secondary" id="btn-quick-movement">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+                </svg>
+                <span>حركة سريعة (+ / -)</span>
+              </button>
+            </div>
+            <div style="font-size:0.88rem; color:var(--slate-500); font-weight:600;">
+              إجمالي الأصناف: <strong id="mgr-items-count" style="color:var(--slate-900);">0</strong>
+            </div>
+          </div>
+
+          <div class="filter-bar">
+            <div class="filter-inputs">
+              <input type="text" id="mgr-search" class="form-control" placeholder="بحث بالاسم أو الكود..." style="min-width:240px; flex:1;">
+              <select id="mgr-filter-cat" class="form-control" style="width:auto;">
+                <option value="all">كل التصنيفات</option>
+              </select>
+              <select id="mgr-filter-status" class="form-control" style="width:auto;">
+                <option value="all">كل الحالات</option>
+                <option value="available">متوفر وآمن</option>
+                <option value="low">قارب على النفاد</option>
+                <option value="out">نفد</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>الكود SKU</th>
+                  <th>اسم الخامة</th>
+                  <th>التصنيف</th>
+                  <th>المواصفات</th>
+                  <th>المكان</th>
+                  <th>الرصيد</th>
+                  <th>حد الأمان</th>
+                  <th>إعادة الطلب</th>
+                  <th>الحالة</th>
+                  <th>إجراءات</th>
+                </tr>
+              </thead>
+              <tbody id="mgr-table-body">
+                <!-- Dynamically populated -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- TAB 2: Job Templates (BOM) -->
+        <div id="tab-templates" class="tab-pane" style="display:none;">
+          <div class="flex-between mb-3" style="flex-wrap:wrap; gap:10px;">
+            <div>
+              <h3 style="font-size:1.15rem; font-weight:800;">📐 قوالب تشغيل الألبومات والتابلوهات</h3>
+              <p style="font-size:0.86rem; color:var(--slate-500);">خصم استهلاك الخامات آلياً لكل طلبية أو ألبوم بضغطة زر واحدة</p>
+            </div>
+            <button class="btn btn-primary btn-sm" id="btn-new-template">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+              </svg>
+              <span>إنشاء قالب شغل جديد</span>
+            </button>
+          </div>
+
+          <div id="job-templates-list" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(320px, 1fr)); gap:18px;">
+            <!-- Dynamically populated -->
+          </div>
+        </div>
+
+        <!-- TAB 3: Movements Log & Undo -->
+        <div id="tab-movements" class="tab-pane" style="display:none;">
+          <div class="flex-between mb-3">
+            <div>
+              <h3 style="font-size:1.15rem; font-weight:800;">📋 سجل حركات التوريد والاستهلاك</h3>
+              <p style="font-size:0.86rem; color:var(--slate-500);">متابعة كل عملية سحب أو إضافة مع إمكانية التراجع الفوري عن أي حركة بالخطأ</p>
+            </div>
+          </div>
+
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>التاريخ والوقت</th>
+                  <th>الخامة</th>
+                  <th>نوع الحركة</th>
+                  <th>الكمية</th>
+                  <th>قبل / بعد</th>
+                  <th>السبب والملاحظات</th>
+                  <th>تراجع</th>
+                </tr>
+              </thead>
+              <tbody id="movements-table-body">
+                <!-- Dynamically populated -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- TAB 4: Stocktake -->
+        <div id="tab-stocktake" class="tab-pane" style="display:none;">
+          <div class="flex-between mb-3" style="flex-wrap:wrap; gap:10px;">
+            <div>
+              <h3 style="font-size:1.15rem; font-weight:800;">🔍 الجرد الفعلي للمخزن</h3>
+              <p style="font-size:0.86rem; color:var(--slate-500);">إدخال الكميات الفعلية بعد العد اليدوي، واعتماد تسوية الفروقات آلياً</p>
+            </div>
+            <button class="btn btn-whatsapp" id="btn-apply-stocktake">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="20 6 9 17 4 12"></polyline>
+              </svg>
+              <span>اعتماد وتسوية الجرد الفعلي</span>
+            </button>
+          </div>
+
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>اسم الخامة</th>
+                  <th>الرصيد الدفتري الحالي</th>
+                  <th>العدد الفعلي بالجرد</th>
+                  <th>الفرق</th>
+                </tr>
+              </thead>
+              <tbody id="stocktake-table-body">
+                <!-- Dynamically populated -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- TAB 5: AI Inventory Manager -->
+        <div id="tab-ai" class="tab-pane" style="display:none;">
+          <div class="mb-4">
+            <div style="background:#ffffff; border:1px solid var(--border-color); border-radius:var(--radius-xl); padding:24px; box-shadow:var(--shadow-card); margin-bottom:20px;">
+              <div class="flex-between mb-3" style="flex-wrap:wrap; gap:14px;">
+                <div>
+                  <h3 style="font-size:1.2rem; font-weight:800; color:var(--indigo-600); display:flex; align-items:center; gap:8px;">
+                    <span>🤖 محرك التحليل الإحصائي الذكي (مجاني 100%)</span>
+                  </h3>
+                  <p style="font-size:0.86rem; color:var(--slate-500); margin-top:2px;">تحليل معدلات الاستهلاك الفعلي، تقدير موعد نفاد الخامات، والتوصية بحدود أمان ذكية</p>
+                </div>
+                <button class="btn btn-primary btn-sm" id="btn-apply-ai-thresholds">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                  </svg>
+                  <span>تطبيق الحدود الدنيا الآمنة المقترحة</span>
+                </button>
+              </div>
+
+              <div class="table-responsive">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>الخامة</th>
+                      <th>الرصيد الحالي</th>
+                      <th>معدل الاستهلاك اليومي</th>
+                      <th>الأيام المتوقعة قبل النفاد</th>
+                      <th>الحد الأدنى الحالي</th>
+                      <th>الحد المقترح ذكياً</th>
+                      <th>الحالة التقديرية</th>
+                    </tr>
+                  </thead>
+                  <tbody id="ai-analysis-table-body">
+                    <!-- Dynamically populated -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Gemini AI Consultation Section -->
+            <div style="background:#ffffff; border:1px solid #c7d2fe; border-radius:var(--radius-xl); padding:24px; box-shadow:var(--shadow-card);">
+              <div class="flex-between mb-3" style="flex-wrap:wrap; gap:12px;">
+                <div>
+                  <h3 style="font-size:1.15rem; font-weight:800; color:var(--indigo-900);">💡 استشارة الذكاء الاصطناعي مع Gemini</h3>
+                  <p style="font-size:0.86rem; color:var(--slate-500); margin-top:2px;">توليد تقرير استشاري شامل لتأمين مواسم الذروة وتفادي توقف ماكينات الطباعة والتجليد</p>
+                </div>
+                <button class="btn btn-ai-luxury" id="btn-run-gemini-ai">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"></path>
+                  </svg>
+                  <span>طلب التقرير الاستشاري الآن</span>
+                </button>
+              </div>
+
+              <div id="gemini-report-box" style="display:none; background:var(--slate-50); border:1px solid var(--border-color); border-radius:var(--radius-lg); padding:20px; font-size:0.95rem; line-height:1.8; white-space:pre-wrap; max-height:480px; overflow-y:auto; color:var(--slate-800);">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 6: Settings & Universal Sync -->
+        <div id="tab-settings" class="tab-pane" style="display:none;">
+          <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(320px, 1fr)); gap:22px;">
+            <!-- PIN Code Settings -->
+            <div style="background:#ffffff; border:1px solid var(--border-color); border-radius:var(--radius-xl); padding:24px; box-shadow:var(--shadow-card);">
+              <h4 style="font-size:1.1rem; font-weight:800; margin-bottom:12px; display:flex; align-items:center; gap:8px;">
+                <span>🔒 تغيير رمز المدير (PIN)</span>
+              </h4>
+              <p style="font-size:0.85rem; color:var(--slate-500); margin-bottom:18px;">الرمز السري المكون من 6 أرقام والمستخدم لحماية واجهة الإدارة والتحكم</p>
+              
+              <div class="form-group mb-3">
+                <label class="form-label" style="font-weight:600; font-size:0.85rem; display:block; margin-bottom:4px;">الرمز السري الحالي:</label>
+                <input type="password" id="set-current-pin" class="form-control" placeholder="أدخل الرمز الحالي" maxlength="6" inputmode="numeric">
+              </div>
+
+              <div class="form-group mb-3">
+                <label class="form-label" style="font-weight:600; font-size:0.85rem; display:block; margin-bottom:4px;">الرمز السري الجديد (6 أرقام بالتمام):</label>
+                <input type="password" id="set-new-pin" class="form-control" placeholder="أدخل 6 أرقام جديدة" maxlength="6" inputmode="numeric">
+              </div>
+
+              <div class="form-group mb-3">
+                <label class="form-label" style="font-weight:600; font-size:0.85rem; display:block; margin-bottom:4px;">تأكيد الرمز الجديد:</label>
+                <input type="password" id="set-confirm-pin" class="form-control" placeholder="أعد كتابة الرمز الجديد" maxlength="6" inputmode="numeric">
+              </div>
+
+              <button type="button" class="btn btn-primary" id="btn-save-new-pin" style="width:100%; min-height:44px;">
+                <span>🔒 حفظ وتغيير الرمز السري</span>
+              </button>
+              <div id="pin-change-feedback" style="display:none; margin-top:12px; font-size:0.86rem; padding:10px 14px; border-radius:var(--radius-md);"></div>
+            </div>
+
+            <!-- Database Connectivity & Diagnostics (Read-Only Status) -->
+            <div style="background:#ffffff; border:1px solid #cbd5e1; border-radius:var(--radius-xl); padding:24px; box-shadow:var(--shadow-card); position:relative; overflow:hidden;">
+              <div style="position:absolute; top:0; right:0; left:0; height:4px; background:linear-gradient(90deg, var(--indigo-600), var(--emerald-500));"></div>
+              <h4 style="font-size:1.1rem; font-weight:800; margin-bottom:8px; display:flex; align-items:center; gap:8px;">
+                <span>🗄️ حالة خادم وقاعدة البيانات (Server & DB Health)</span>
+              </h4>
+              <p style="font-size:0.85rem; color:var(--slate-500); margin-bottom:14px;">
+                يتم إدارة الاتصال بقاعدة بيانات MongoDB Atlas السحابية عبر متغيرات البيئة الآمنة على السيرفر لضمان الأمان الأقصى.
+              </p>
+
+              <!-- Live Status Panel -->
+              <div id="db-connection-status-panel" style="background:var(--slate-50); border:1px solid var(--border-color); border-radius:var(--radius-md); padding:16px; margin-bottom:16px;">
+                <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; flex-wrap:wrap; gap:8px;">
+                  <span style="font-size:0.88rem; font-weight:700; color:var(--slate-800);">حالة التخزين الحالية:</span>
+                  <span id="db-status-badge" class="badge badge-available">
+                    <span class="sync-dot" style="margin-left:4px;"></span>
+                    <span id="db-status-badge-text">فحص الحالة...</span>
+                  </span>
+                </div>
+                <div id="db-status-detail" style="font-size:0.84rem; color:var(--slate-600); line-height:1.6;">
+                  جاري جلب معلومات الخادم...
+                </div>
+              </div>
+
+              <button class="btn btn-secondary" id="btn-sync-database-now" style="width:100%; min-height:44px;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="23 4 23 10 17 10"></polyline>
+                  <polyline points="1 20 1 14 7 14"></polyline>
+                  <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+                </svg>
+                <span>🔄 تحديث الحالة وفحص المزامنة</span>
+              </button>
+            </div>
+
+            <!-- Backup & Restore (Protected Endpoints) -->
+            <div style="background:#ffffff; border:1px solid var(--border-color); border-radius:var(--radius-xl); padding:24px; box-shadow:var(--shadow-card);">
+              <h4 style="font-size:1.1rem; font-weight:800; margin-bottom:12px; display:flex; align-items:center; gap:8px;">
+                <span>💾 النسخ الاحتياطي اليدوي الشامل</span>
+              </h4>
+              <p style="font-size:0.85rem; color:var(--slate-500); margin-bottom:18px;">تنزيل نسخة احتياطية آمنة خالية من الأسرار أو استرجاعها في أي وقت</p>
+
+              <div style="display:flex; gap:10px;">
+                <button class="btn btn-secondary" id="btn-export-backup" style="flex:1;">
+                  <span>📥 تنزيل نسخة JSON</span>
+                </button>
+                <label class="btn btn-secondary" style="flex:1; cursor:pointer;">
+                  <span>📤 استعادة من JSON</span>
+                  <input type="file" id="input-import-backup" accept=".json" style="display:none;">
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </section>
+
+    <!-- ====================================================================== -->
+    <!-- MODALS                                                                 -->
+    <!-- ====================================================================== -->
+
+    <!-- 1) 6-Digit Discrete PIN Lock Modal (شاشة قفل المدير الفاخرة) -->
+    <div id="modal-pin" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="pin-modal-title">
+      <div class="modal-box" id="pin-modal-card" style="max-width:390px;">
+        <div class="modal-header">
+          <h3 class="modal-title" id="pin-modal-title">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--indigo-600)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+            </svg>
+            <span>رمز دخول المدير</span>
+          </h3>
+          <button class="modal-close" id="btn-close-pin-x" title="إغلاق النافذة" aria-label="إغلاق النافذة">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        </div>
+        <div class="modal-body" style="text-align:center; padding-top:16px;">
+          <p style="font-size:0.88rem; color:var(--slate-500); margin-bottom:12px;">
+            أدخل كود المرور السري (6 أرقام) للوصول إلى إدارة المخزون
+          </p>
+
+          <!-- 6 Individual PIN Input Cells -->
+          <div class="pin-digits-container" id="pin-cells-wrapper">
+            <input type="password" maxlength="1" class="pin-cell" data-idx="0" inputmode="numeric" autocomplete="one-time-code" autofocus>
+            <input type="password" maxlength="1" class="pin-cell" data-idx="1" inputmode="numeric" autocomplete="one-time-code">
+            <input type="password" maxlength="1" class="pin-cell" data-idx="2" inputmode="numeric" autocomplete="one-time-code">
+            <input type="password" maxlength="1" class="pin-cell" data-idx="3" inputmode="numeric" autocomplete="one-time-code">
+            <input type="password" maxlength="1" class="pin-cell" data-idx="4" inputmode="numeric" autocomplete="one-time-code">
+            <input type="password" maxlength="1" class="pin-cell" data-idx="5" inputmode="numeric" autocomplete="one-time-code">
+          </div>
+
+          <!-- Visibility Toggle -->
+          <div style="margin-bottom:8px;">
+            <button type="button" id="btn-toggle-pin-visibility" class="pin-toggle-btn">
+              <span>👁️ إظهار الرمز</span>
+            </button>
+          </div>
+
+          <!-- Error Alert & Attempt Counter -->
+          <div id="pin-error-msg" style="color:var(--rose-600); font-size:0.86rem; font-weight:600; min-height:22px; margin-bottom:12px;"></div>
+
+          <!-- Touch Keypad -->
+          <div class="pin-keypad">
+            <button type="button" class="pin-key" data-key="1">1</button>
+            <button type="button" class="pin-key" data-key="2">2</button>
+            <button type="button" class="pin-key" data-key="3">3</button>
+            <button type="button" class="pin-key" data-key="4">4</button>
+            <button type="button" class="pin-key" data-key="5">5</button>
+            <button type="button" class="pin-key" data-key="6">6</button>
+            <button type="button" class="pin-key" data-key="7">7</button>
+            <button type="button" class="pin-key" data-key="8">8</button>
+            <button type="button" class="pin-key" data-key="9">9</button>
+            <button type="button" class="pin-key" id="btn-pin-key-clear" style="font-size:0.92rem; color:var(--rose-600);">مسح</button>
+            <button type="button" class="pin-key" data-key="0">0</button>
+            <button type="button" class="pin-key" id="btn-pin-key-del" style="display:flex; align-items:center; justify-content:center;" aria-label="حذف">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z"></path>
+                <line x1="18" y1="9" x2="12" y2="15"></line>
+                <line x1="12" y1="9" x2="18" y2="15"></line>
+              </svg>
+            </button>
+          </div>
+        </div>
+        <div class="modal-footer" style="justify-content:space-between;">
+          <button type="button" class="btn btn-secondary" id="btn-close-pin-cancel">
+            <span>إلغاء</span>
+          </button>
+          <button type="button" class="btn btn-primary" id="btn-submit-pin" style="min-width:130px; font-weight:700;">
+            <span>دخول المدير</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2) Add / Edit Item Modal (0% Money/Price) -->
+    <div id="modal-item" class="modal-backdrop">
+      <div class="modal-box lg">
+        <div class="modal-header">
+          <h3 class="modal-title" id="item-modal-title">إضافة خامة جديدة</h3>
+          <button class="modal-close" id="btn-close-item-x" title="إغلاق">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        </div>
+        <div class="modal-body">
+          <div id="item-modal-error" style="display:none; color:var(--rose-700); background:var(--rose-50); border:1px solid var(--rose-200); padding:10px 14px; border-radius:var(--radius-md); margin-bottom:14px; font-size:0.88rem; font-weight:600;"></div>
+          <form id="form-item">
+            <input type="hidden" id="item-id">
+            
+            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:16px; margin-bottom:16px;">
+              <div>
+                <label class="form-label" style="font-weight:600; font-size:0.86rem; display:block; margin-bottom:5px;">اسم الخامة / الصنف *</label>
+                <input type="text" id="item-name" class="form-control" placeholder="مثال: ورق جلوسي 260 جم" required>
+              </div>
+
+              <div>
+                <label class="form-label" style="font-weight:600; font-size:0.86rem; display:block; margin-bottom:5px;">الكود SKU (تلقائي إن ترك فارغاً)</label>
+                <input type="text" id="item-sku" class="form-control" placeholder="مثال: PPR-GL-3040">
+              </div>
+            </div>
+
+            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:16px; margin-bottom:16px;">
+              <div>
+                <label class="form-label" style="font-weight:600; font-size:0.86rem; display:block; margin-bottom:5px;">التصنيف</label>
+                <select id="item-category" class="form-control"></select>
+              </div>
+
+              <div>
+                <label class="form-label" style="font-weight:600; font-size:0.86rem; display:block; margin-bottom:5px;">المقاس والمواصفات</label>
+                <input type="text" id="item-specs" class="form-control" placeholder="مثال: 30×40 سم - رزمة 50 فرخ">
+              </div>
+            </div>
+
+            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(130px, 1fr)); gap:16px; margin-bottom:16px;">
+              <div>
+                <label class="form-label" style="font-weight:600; font-size:0.86rem; display:block; margin-bottom:5px;">وحدة القياس</label>
+                <select id="item-unit" class="form-control">
+                  <option value="رزمة">رزمة</option>
+                  <option value="علبة">علبة</option>
+                  <option value="قطعة">قطعة</option>
+                  <option value="متر">متر</option>
+                  <option value="رول">رول</option>
+                  <option value="فرخ">فرخ</option>
+                  <option value="كرتونة">كرتونة</option>
+                  <option value="باكت">باكت</option>
+                  <option value="لتر">لتر</option>
+                </select>
+              </div>
+
+              <div>
+                <label class="form-label" style="font-weight:600; font-size:0.86rem; display:block; margin-bottom:5px;">الرصيد الحالي</label>
+                <input type="number" id="item-quantity" class="form-control" step="any" min="0" value="0" required>
+              </div>
+
+              <div>
+                <label class="form-label" style="font-weight:600; font-size:0.86rem; display:block; margin-bottom:5px;">حد الأمان الأدنى</label>
+                <input type="number" id="item-min-limit" class="form-control" step="any" min="0" value="5" required>
+              </div>
+
+              <div>
+                <label class="form-label" style="font-weight:600; font-size:0.86rem; display:block; margin-bottom:5px;">كمية إعادة الطلب</label>
+                <input type="number" id="item-reorder-qty" class="form-control" step="any" min="0" value="10">
+              </div>
+            </div>
+
+            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:16px; margin-bottom:16px;">
+              <div>
+                <label class="form-label" style="font-weight:600; font-size:0.86rem; display:block; margin-bottom:5px;">مكان التخزين / الرف</label>
+                <input type="text" id="item-storage" class="form-control" placeholder="مثال: رف أ-1، درج 2">
+              </div>
+
+              <div>
+                <label class="form-label" style="font-weight:600; font-size:0.86rem; display:block; margin-bottom:5px;">المورد المفضل</label>
+                <select id="item-supplier" class="form-control"></select>
+              </div>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" id="btn-close-item-cancel">إلغاء</button>
+          <button type="button" class="btn btn-primary" id="btn-save-item">حفظ وتأكيد الخامة</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- In-App Confirmation Modal (Works 100% in iFrames) -->
+    <div id="modal-confirm" class="modal-backdrop">
+      <div class="modal-box" style="max-width:420px; text-align:center;">
+        <div class="modal-body" style="padding:24px 20px 16px 20px;">
+          <div style="width:52px; height:52px; border-radius:50%; background:var(--rose-50); color:var(--rose-600); display:inline-flex; align-items:center; justify-content:center; margin-bottom:12px;">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+              <line x1="12" y1="9" x2="12" y2="13"></line>
+              <line x1="12" y1="17" x2="12.01" y2="17"></line>
+            </svg>
+          </div>
+          <h3 id="confirm-modal-title" style="font-size:1.15rem; font-weight:800; margin-bottom:8px; color:var(--slate-900);">تأكيد الحذف</h3>
+          <p id="confirm-modal-message" style="font-size:0.9rem; color:var(--slate-600); line-height:1.6; margin-bottom:16px;">هل أنت متأكد من تنفيذ هذا الإجراء؟</p>
+        </div>
+        <div class="modal-footer" style="justify-content:center; gap:12px; padding:12px 18px;">
+          <button type="button" class="btn btn-secondary" id="btn-confirm-cancel" style="min-width:100px;">إلغاء</button>
+          <button type="button" class="btn btn-danger" id="btn-confirm-ok" style="min-width:120px;">نعم، حذف نهائي</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3) Quick Stock Movement Modal (+ / -) -->
+    <div id="modal-quick-movement" class="modal-backdrop">
+      <div class="modal-box">
+        <div class="modal-header">
+          <h3 class="modal-title">⚡ تسجيل حركة رصيد سريعة</h3>
+          <button class="modal-close" id="btn-close-movement-x">✕</button>
+        </div>
+        <div class="modal-body">
+          <div class="form-group mb-3">
+            <label class="form-label" style="font-weight:600; font-size:0.86rem; display:block; margin-bottom:5px;">اختر الخامة:</label>
+            <select id="mov-item-select" class="form-control"></select>
+          </div>
+
+          <div style="display:flex; gap:10px; margin-bottom:16px;">
+            <button type="button" id="mov-type-supply" class="btn btn-whatsapp" style="flex:1;">
+              <span>➕ توريد / إضافة (+)</span>
+            </button>
+            <button type="button" id="mov-type-consume" class="btn btn-secondary" style="flex:1;">
+              <span>➖ استهلاك / صرف (-)</span>
+            </button>
+          </div>
+
+          <div class="form-group mb-3">
+            <label class="form-label" style="font-weight:600; font-size:0.86rem; display:block; margin-bottom:5px;">الكمية:</label>
+            <input type="number" id="mov-amount" class="form-control" step="any" min="0.01" placeholder="مثال: 5">
+          </div>
+
+          <div class="form-group mb-3">
+            <label class="form-label" style="font-weight:600; font-size:0.86rem; display:block; margin-bottom:5px;">السبب / البيان:</label>
+            <input type="text" id="mov-reason" class="form-control" placeholder="مثال: توريد فاتورة جديدة، استهلاك ألبوم زفاف، هالك تجارب...">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" id="btn-close-movement-cancel">إلغاء</button>
+          <button class="btn btn-primary" id="btn-confirm-movement">تنفيذ وتسجيل الحركة</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4) New Job Template Modal -->
+    <div id="modal-template" class="modal-backdrop">
+      <div class="modal-box lg">
+        <div class="modal-header">
+          <h3 class="modal-title">📐 إضافة قالب شغل جديد</h3>
+          <button class="modal-close" id="btn-close-template-x">✕</button>
+        </div>
+        <div class="modal-body">
+          <div class="form-group mb-3">
+            <label class="form-label" style="font-weight:600; font-size:0.86rem; display:block; margin-bottom:5px;">اسم قالب الشغل:</label>
+            <input type="text" id="tpl-name" class="form-control" placeholder="مثال: تابلوه خشب كانفاس 40×60 سم">
+          </div>
+
+          <h4 style="font-size:0.95rem; font-weight:700; margin-bottom:10px;">الخامات المكونة لكل قطعة واحدة:</h4>
+          <div id="tpl-lines-container" style="display:flex; flex-direction:column; gap:10px; margin-bottom:14px;"></div>
+          
+          <button class="btn btn-secondary btn-sm" id="btn-add-tpl-line">
+            <span>➕ إضافة خامة أخرى للقالب</span>
+          </button>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" id="btn-close-template-cancel">إلغاء</button>
+          <button class="btn btn-primary" id="btn-save-template">حفظ القالب</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 5) AI Assistant Dedicated Modal (Accessible from Owner View too) -->
+    <div id="modal-ai-dashboard" class="modal-backdrop">
+      <div class="modal-box lg">
+        <div class="modal-header">
+          <h3 class="modal-title">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--indigo-600)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"></path>
+            </svg>
+            <span>لوحة تحليلات الذكاء الاصطناعي للمخزن</span>
+          </h3>
+          <button class="modal-close" id="btn-close-ai-x">✕</button>
+        </div>
+        <div class="modal-body">
+          <p style="font-size:0.88rem; color:var(--slate-500); margin-bottom:16px;">
+            توقعات استهلاك الخامات ومواعيد نفادها بناءً على وتيرة عمل الاستوديو وسجل الحركات الفعلي:
+          </p>
+
+          <div class="table-responsive" style="margin-bottom:16px;">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>الخامة</th>
+                  <th>الرصيد الحالي</th>
+                  <th>معدل الاستهلاك اليومي</th>
+                  <th>الأيام المتبقية قبل النفاد</th>
+                  <th>الحالة والجاهزية</th>
+                </tr>
+              </thead>
+              <tbody id="modal-ai-table-body">
+                <!-- Dynamically populated -->
+              </tbody>
+            </table>
+          </div>
+
+          <div style="background:var(--indigo-50); border:1px solid var(--indigo-100); border-radius:var(--radius-lg); padding:16px;">
+            <h4 style="font-size:0.95rem; font-weight:700; color:var(--indigo-900); margin-bottom:4px;">💡 نصيحة المدير الذكي:</h4>
+            <p id="modal-ai-tip" style="font-size:0.88rem; color:var(--indigo-700); line-height:1.6;">
+              جاري فحص مؤشرات الأمان وتأمين مواسم الذروة...
+            </p>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" id="btn-close-ai-footer">إغلاق</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Toast Notification Container -->
+    <div id="toast"></div>
+
+    <!-- ====================================================================== -->
+    <!-- APPLICATION CLIENT SCRIPT                                              -->
+    <!-- ====================================================================== -->
+    <script>
+      (function() {
+        // Master State Object (Clean, 0% Prices/Money, 0% Plaintext Secrets)
+        const DEFAULT_STATE = {
+          server_version: 1,
+          items: [
+            { id: 'itm-1', sku: 'PPR-GL-3040', name: 'ورق فوتوغرافي جلوسي لامع 260 جم', category_id: 'cat-1', specs: '30×40 سم - رزمة 50 فرخ', unit: 'رزمة', quantity: 18, min_limit: 5, reorder_qty: 15, storage_location: 'رف أ-1', supplier_id: '', is_archived: false },
+            { id: 'itm-2', sku: 'PPR-MT-A4', name: 'ورق تصوير مات مطفي 230 جم', category_id: 'cat-1', specs: 'A4 - باكت 100 فرخ', unit: 'علبة', quantity: 3, min_limit: 6, reorder_qty: 10, storage_location: 'رف أ-2', supplier_id: '', is_archived: false },
+            { id: 'itm-3', sku: 'INK-EPS-BK', name: 'حبر إبسون أصلي أسود T6731', category_id: 'cat-2', specs: 'عبوة 70 مل للطباعة الدقيقة', unit: 'علبة', quantity: 2, min_limit: 4, reorder_qty: 6, storage_location: 'درج الأحبار 1', supplier_id: '', is_archived: false },
+            { id: 'itm-4', sku: 'INK-EPS-CY', name: 'حبر إبسون أصلي أزرق سماوي T6732', category_id: 'cat-2', specs: 'عبوة 70 مل', unit: 'علبة', quantity: 0, min_limit: 3, reorder_qty: 6, storage_location: 'درج الأحبار 1', supplier_id: '', is_archived: false },
+            { id: 'itm-5', sku: 'ALB-MDF-3030', name: 'شيتات كرتون مكبس حراري 1.5 مم', category_id: 'cat-3', specs: '30×30 سم لصفحات الألبوم الديجيتال', unit: 'قطعة', quantity: 240, min_limit: 100, reorder_qty: 200, storage_location: 'مخزن التجليد - رف 2', supplier_id: '', is_archived: false },
+            { id: 'itm-6', sku: 'ALB-LTH-BRN', name: 'جلد صناعي إيطالي مبطن بني', category_id: 'cat-3', specs: 'عرض 140 سم - لغلاف الألبوم', unit: 'متر', quantity: 4.5, min_limit: 5, reorder_qty: 10, storage_location: 'مخزن الأقمشة', supplier_id: '', is_archived: false },
+            { id: 'itm-7', sku: 'ADH-DBL-30', name: 'رول سلوفان حراري مات مطفي 30 ميكرون', category_id: 'cat-4', specs: 'عرض 33 سم × طول 200 متر', unit: 'رول', quantity: 1, min_limit: 2, reorder_qty: 4, storage_location: 'ماكينة السلوفان', supplier_id: '', is_archived: false },
+            { id: 'itm-8', sku: 'BOX-WOD-3030', name: 'علبة خشب ليزر مبطنة قطيفة للألبوم', category_id: 'cat-6', specs: 'مقاس 30×30 سم مع قفل نحاسي', unit: 'علبة', quantity: 8, min_limit: 4, reorder_qty: 12, storage_location: 'غرفة التسليم', supplier_id: '', is_archived: false }
+          ],
+          categories: [
+            { id: 'cat-1', name: 'أوراق الطباعة', description: 'ورق فوتوغرافي، كانفاس، جلوسي ومات' },
+            { id: 'cat-2', name: 'الأحبار', description: 'أحبار طابعات إبسون وكانون' },
+            { id: 'cat-3', name: 'خامات تغليف الألبومات', description: 'كرتون مقوى، جلد، قطيفة' },
+            { id: 'cat-4', name: 'المواد اللاصقة والسلوفان', description: 'شيتات دبل فيس، رولات سلوفان' },
+            { id: 'cat-5', name: 'أخشاب وشاسيهات', description: 'خشب MDF، شاسيهات كانفاس' },
+            { id: 'cat-6', name: 'إكسسوارات وعلب الألبومات', description: 'علب فاخرة، زوايا نحاسية' }
+          ],
+          suppliers: [],
+          jobTemplates: [
+            {
+              id: 'job-1',
+              name: 'ألبوم زفاف ديجيتال فاخر 30×30 سم (20 صفحة)',
+              pinned_on_dashboard: true,
+              lines: [
+                { item_id: 'itm-5', quantity: 10 },
+                { item_id: 'itm-1', quantity: 1 },
+                { item_id: 'itm-6', quantity: 0.5 },
+                { item_id: 'itm-8', quantity: 1 }
+              ]
+            },
+            {
+              id: 'job-2',
+              name: 'طباعة وسلوفان بوستر كبير 30×40 سم',
+              pinned_on_dashboard: true,
+              lines: [
+                { item_id: 'itm-1', quantity: 0.1 },
+                { item_id: 'itm-7', quantity: 0.05 }
+              ]
+            }
+          ],
+          movements: [],
+          settings: {
+            default_min_threshold: 5
+          }
+        };
+
+        let state = { ...DEFAULT_STATE };
+        let activeMovType = 'supply';
+        let pinAttempts = 0;
+
+        let lastSyncTimestamp = 0;
+        let syncPollingTimer = null;
+
+        // Load State from LocalStorage as fallback cache
+        function loadLocalState() {
+          try {
+            const raw = localStorage.getItem('studio_inventory_master_state');
+            if (raw) {
+              const parsed = JSON.parse(raw);
+              state = {
+                ...DEFAULT_STATE,
+                ...parsed,
+                settings: { ...DEFAULT_STATE.settings, ...(parsed.settings || {}) }
+              };
+            }
+          } catch (e) {
+            console.warn('Failed to parse localStorage state:', e);
+          }
+        }
+
+        // Local cache helper
+        function saveLocalState() {
+          try {
+            localStorage.setItem('studio_inventory_master_state', JSON.stringify(state));
+          } catch (e) {
+            console.warn('saveLocalState error:', e);
+          }
+        }
+
+        async function saveStateAndSync() {
+          saveLocalState();
+          updateSyncBadge('connected', 'متصل ومتزامن لحظياً');
+        }
+
+        // Fetch Remote State from Backend
+        async function fetchRemoteState() {
+          updateSyncBadge('syncing', 'جاري جلب أحدث نسخة...');
+          try {
+            const res = await fetch('/api/state');
+            if (res.ok) {
+              const resJson = await res.json();
+              if (resJson && resJson.data) {
+                state = {
+                  ...DEFAULT_STATE,
+                  ...resJson.data,
+                  settings: { ...DEFAULT_STATE.settings, ...(resJson.data.settings || {}) }
+                };
+                lastSyncTimestamp = resJson.timestamp || Date.now();
+                saveLocalState();
+                updateSyncBadge('connected', 'متصل ومتزامن لحظياً');
+                renderAll();
+                return;
+              }
+            }
+            updateSyncBadge('offline', 'غير متصل (بيانات محلية)');
+          } catch (err) {
+            console.warn('fetchRemoteState error:', err);
+            updateSyncBadge('offline', 'غير متصل (بيانات محلية)');
+          }
+          renderAll();
+        }
+
+        function startSyncPolling() {
+          if (syncPollingTimer) clearInterval(syncPollingTimer);
+          syncPollingTimer = setInterval(async () => {
+            try {
+              const res = await fetch(`/api/state/changes?since=${lastSyncTimestamp}`);
+              if (res.ok) {
+                const data = await res.json();
+                if (data && data.hasChanges) {
+                  await fetchRemoteState();
+                }
+              }
+            } catch (_) {}
+          }, 20000);
+        }
+
+        function updateSyncBadge(status, text) {
+          const badge = document.getElementById('sync-status-badge');
+          const txt = document.getElementById('sync-text');
+          if (!badge || !txt) return;
+
+          badge.className = 'sync-badge';
+          if (status === 'syncing') {
+            badge.classList.add('syncing');
+            badge.innerHTML = `<span class="sync-dot"></span> <span>${text}</span>`;
+          } else if (status === 'offline') {
+            badge.innerHTML = `<span class="sync-dot" style="background:#dc2626;"></span> <span>${text}</span>`;
+          } else {
+            badge.innerHTML = `<span class="sync-dot"></span> <span>${text}</span>`;
+          }
+        }
+
+        function showToast(msg) {
+          const toast = document.getElementById('toast');
+          if (!toast) return;
+          toast.textContent = msg;
+          toast.classList.add('show');
+          setTimeout(() => {
+            toast.classList.remove('show');
+          }, 3200);
+        }
+
+        // Calculation Helpers (0% Money)
+        function getTrafficStatus() {
+          const active = state.items.filter(i => !i.is_archived);
+          let outCount = 0;
+          let lowCount = 0;
+
+          for (const item of active) {
+            if (Number(item.quantity) <= 0) {
+              outCount++;
+            } else if (Number(item.quantity) <= Number(item.min_limit)) {
+              lowCount++;
+            }
+          }
+
+          if (outCount > 0) {
+            return {
+              level: 'danger',
+              icon: '🔴',
+              title: 'خطر حرج - خط الإنتاج مهدد بالتوقف',
+              desc: `يوجد ${outCount} صنف نفد رصيده بالكامل، و ${lowCount} صنف قارب على النفاد. يلزم التوريد فوراً.`,
+              outCount,
+              lowCount
+            };
+          }
+
+          if (lowCount > 0) {
+            return {
+              level: 'warning',
+              icon: '🟠',
+              title: 'تنبيه استباقي - خامات أوشكت على النفاد',
+              desc: `يوجد ${lowCount} صنف أقل من الحد الأدنى للأمان، تكفي لأقل من أسبوع من العمل المعتاد.`,
+              outCount,
+              lowCount
+            };
+          }
+
+          return {
+            level: 'healthy',
+            icon: '🟢',
+            title: 'المخزون مستقر تماماً والجاهزية ممتازة',
+            desc: 'جميع الخامات الأساسية متوفرة بأرصدة آمنة تتجاوز الحد الأدنى المطلوب للاستوديو.',
+            outCount: 0,
+            lowCount: 0
+          };
+        }
+
+        function getProductionCapacities() {
+          const itemMap = new Map();
+          state.items.filter(i => !i.is_archived).forEach(i => itemMap.set(i.id, i));
+
+          return state.jobTemplates.map(tpl => {
+            let minUnits = Infinity;
+            let bottleneckItem = null;
+            let bottleneckQty = 0;
+
+            if (!tpl.lines || tpl.lines.length === 0) {
+              return { name: tpl.name, units: 0, bottleneckName: 'غير محدد', bottleneckQty: 0 };
+            }
+
+            for (const line of tpl.lines) {
+              const itm = itemMap.get(line.item_id);
+              const avail = itm ? Math.max(0, Number(itm.quantity)) : 0;
+              const needed = Number(line.quantity);
+              if (needed <= 0) continue;
+
+              const possible = Math.floor(avail / needed);
+              if (possible < minUnits) {
+                minUnits = possible;
+                bottleneckItem = itm;
+                bottleneckQty = avail;
+              }
+            }
+
+            return {
+              name: tpl.name,
+              units: minUnits === Infinity ? 0 : minUnits,
+              bottleneckName: bottleneckItem ? bottleneckItem.name : 'غير محدد',
+              bottleneckQty
+            };
+          });
+        }
+
+        // RENDER: Owner View
+        function renderOwnerView() {
+          const activeItems = state.items.filter(i => !i.is_archived);
+          const traffic = getTrafficStatus();
+          const capacities = getProductionCapacities();
+
+          // Banner
+          const banner = document.getElementById('traffic-status-banner');
+          const iconEl = document.getElementById('traffic-icon');
+          const titleEl = document.getElementById('traffic-title');
+          const descEl = document.getElementById('traffic-desc');
+
+          if (banner) {
+            banner.className = `traffic-banner ${traffic.level}`;
+            iconEl.textContent = traffic.icon;
+            titleEl.textContent = traffic.title;
+            descEl.textContent = traffic.desc;
+          }
+
+          // Smart Stat Cards (0% Money)
+          const totalEl = document.getElementById('owner-stat-total');
+          const attentionEl = document.getElementById('owner-stat-attention');
+          const attentionSubEl = document.getElementById('owner-stat-attention-sub');
+          const stabilityEl = document.getElementById('owner-stat-stability');
+          const stabilitySubEl = document.getElementById('owner-stat-stability-sub');
+          const readinessEl = document.getElementById('owner-stat-readiness');
+          const readinessSubEl = document.getElementById('owner-stat-readiness-sub');
+
+          if (totalEl) totalEl.textContent = activeItems.length;
+          
+          if (attentionEl) {
+            const needAttention = traffic.lowCount + traffic.outCount;
+            attentionEl.textContent = needAttention;
+            if (attentionSubEl) {
+              attentionSubEl.textContent = needAttention === 0 
+                ? 'لا توجد خامات حرجة' 
+                : `${traffic.outCount} نفد تماماً، ${traffic.lowCount} قارب على النفاد`;
+            }
+          }
+
+          if (stabilityEl) {
+            const healthyCount = activeItems.filter(i => Number(i.quantity) > Number(i.min_limit)).length;
+            const pct = activeItems.length > 0 ? Math.round((healthyCount / activeItems.length) * 100) : 100;
+            stabilityEl.textContent = `${pct}%`;
+            if (stabilitySubEl) stabilitySubEl.textContent = `${healthyCount} من ${activeItems.length} خامة بأمان تام`;
+          }
+
+          if (readinessEl) {
+            const mainAlbum = capacities.find(c => c.name.includes('ألبوم')) || capacities[0];
+            const mainPoster = capacities.find(c => c.name.includes('بوستر') || c.name.includes('تابلوه')) || capacities[1];
+            
+            let readinessText = '0 جاهز';
+            if (mainAlbum && mainPoster) {
+              readinessText = `${mainAlbum.units} ألبوم و ${mainPoster.units} تابلوه`;
+            } else if (mainAlbum) {
+              readinessText = `${mainAlbum.units} ألبوم`;
+            }
+            readinessEl.textContent = readinessText;
+            if (readinessSubEl) readinessSubEl.textContent = 'جاهز للتسليم والتقفيل الفوري بالمخزن';
+          }
+
+          // Production Capacity Grid
+          const capGrid = document.getElementById('production-capacity-grid');
+          if (capGrid) {
+            capGrid.innerHTML = capacities.map(c => `
+              <div class="capacity-item">
+                <div class="capacity-item-name">${c.name}</div>
+                <div class="capacity-item-count">
+                  <span>${c.units}</span>
+                  <span style="font-size:0.9rem; font-weight:600; color:var(--slate-500);">قطعة جاهزة للتسليم</span>
+                </div>
+                <div class="capacity-item-bottleneck">عنق الزجاجة: ${c.bottleneckName} (المتبقي: ${c.bottleneckQty})</div>
+              </div>
+            `).join('');
+          }
+
+          // Urgent Section
+          const urgentBox = document.getElementById('owner-urgent-box');
+          const urgentItemsCont = document.getElementById('owner-urgent-items');
+          const urgentList = activeItems.filter(i => Number(i.quantity) <= Number(i.min_limit));
+
+          if (urgentBox && urgentItemsCont) {
+            if (urgentList.length > 0) {
+              urgentBox.style.display = 'block';
+              urgentItemsCont.innerHTML = urgentList.map(item => `
+                <span class="badge ${Number(item.quantity) <= 0 ? 'badge-out' : 'badge-low'}" style="font-size:0.86rem; padding:6px 12px;">
+                  ${item.name} (الرصيد: ${item.quantity} ${item.unit} / حد الأمان: ${item.min_limit})
+                </span>
+              `).join('');
+            } else {
+              urgentBox.style.display = 'none';
+            }
+          }
+
+          // Categories filter populate
+          const catFilter = document.getElementById('owner-filter-cat');
+          if (catFilter && catFilter.children.length <= 1) {
+            state.categories.forEach(c => {
+              const opt = document.createElement('option');
+              opt.value = c.id;
+              opt.textContent = c.name;
+              catFilter.appendChild(opt);
+            });
+          }
+
+          // Table Rows
+          renderOwnerTable();
+        }
+
+        function renderOwnerTable() {
+          const tbody = document.getElementById('owner-table-body');
+          if (!tbody) return;
+
+          const searchVal = (document.getElementById('owner-search')?.value || '').trim().toLowerCase();
+          const catVal = document.getElementById('owner-filter-cat')?.value || 'all';
+          const statusVal = document.getElementById('owner-filter-status')?.value || 'all';
+
+          const activeItems = state.items.filter(i => !i.is_archived);
+          const filtered = activeItems.filter(item => {
+            if (searchVal && !item.name.toLowerCase().includes(searchVal) && !(item.sku || '').toLowerCase().includes(searchVal) && !(item.storage_location || '').toLowerCase().includes(searchVal)) {
+              return false;
+            }
+            if (catVal !== 'all' && item.category_id !== catVal) {
+              return false;
+            }
+            const qty = Number(item.quantity);
+            const min = Number(item.min_limit);
+            if (statusVal === 'available' && qty <= min) return false;
+            if (statusVal === 'low' && (qty <= 0 || qty > min)) return false;
+            if (statusVal === 'out' && qty > 0) return false;
+            return true;
+          });
+
+          if (filtered.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:36px; color:var(--slate-500);">لا توجد خامات مطابقة لشروط البحث</td></tr>`;
+            return;
+          }
+
+          const catMap = new Map();
+          state.categories.forEach(c => catMap.set(c.id, c.name));
+
+          tbody.innerHTML = filtered.map(item => {
+            const qty = Number(item.quantity);
+            const min = Number(item.min_limit);
+            let badgeClass = 'badge-available';
+            let badgeText = 'متوفر وآمن';
+
+            if (qty <= 0) {
+              badgeClass = 'badge-out';
+              badgeText = 'نفد بالكامل';
+            } else if (qty <= min) {
+              badgeClass = 'badge-low';
+              badgeText = 'قارب على النفاد';
+            }
+
+            return `
+              <tr>
+                <td><strong>${item.name}</strong></td>
+                <td><span style="font-size:0.86rem; color:var(--slate-600);">${catMap.get(item.category_id) || 'عام'}</span></td>
+                <td><span style="font-size:0.86rem; color:var(--slate-500);">${item.specs || '-'}</span></td>
+                <td><span style="font-size:0.84rem; background:var(--slate-100); padding:3px 8px; border-radius:var(--radius-sm); font-weight:500;">${item.storage_location || '-'}</span></td>
+                <td><strong style="font-size:1.1rem; color:var(--slate-900);">${item.quantity}</strong> <span style="font-size:0.82rem; color:var(--slate-500);">${item.unit}</span></td>
+                <td><span style="font-size:0.9rem; color:var(--slate-600);">${item.min_limit} ${item.unit}</span></td>
+                <td><span class="badge ${badgeClass}">${badgeText}</span></td>
+              </tr>
+            `;
+          }).join('');
+        }
+
+        // RENDER: Manager View
+        function renderManagerView() {
+          const activeItems = state.items.filter(i => !i.is_archived);
+          const countEl = document.getElementById('mgr-items-count');
+          if (countEl) countEl.textContent = activeItems.length;
+
+          // Category filter
+          const mgrCat = document.getElementById('mgr-filter-cat');
+          if (mgrCat && mgrCat.children.length <= 1) {
+            state.categories.forEach(c => {
+              const opt = document.createElement('option');
+              opt.value = c.id;
+              opt.textContent = c.name;
+              mgrCat.appendChild(opt);
+            });
+          }
+
+          renderManagerItemsTable();
+          renderJobTemplates();
+          renderMovementsTable();
+          renderStocktakeTable();
+          renderAiAnalysis();
+          populateSettingsInputs();
+        }
+
+        function renderManagerItemsTable() {
+          const tbody = document.getElementById('mgr-table-body');
+          if (!tbody) return;
+
+          const searchVal = (document.getElementById('mgr-search')?.value || '').trim().toLowerCase();
+          const catVal = document.getElementById('mgr-filter-cat')?.value || 'all';
+          const statusVal = document.getElementById('mgr-filter-status')?.value || 'all';
+
+          const activeItems = state.items.filter(i => !i.is_archived);
+          const filtered = activeItems.filter(item => {
+            if (searchVal && !item.name.toLowerCase().includes(searchVal) && !(item.sku || '').toLowerCase().includes(searchVal)) {
+              return false;
+            }
+            if (catVal !== 'all' && item.category_id !== catVal) {
+              return false;
+            }
+            const qty = Number(item.quantity);
+            const min = Number(item.min_limit);
+            if (statusVal === 'available' && qty <= min) return false;
+            if (statusVal === 'low' && (qty <= 0 || qty > min)) return false;
+            if (statusVal === 'out' && qty > 0) return false;
+            return true;
+          });
+
+          if (filtered.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="10" style="text-align:center; padding:36px; color:var(--slate-500);">لا توجد خامات مسجلة</td></tr>`;
+            return;
+          }
+
+          const catMap = new Map();
+          state.categories.forEach(c => catMap.set(c.id, c.name));
+
+          tbody.innerHTML = filtered.map(item => {
+            const qty = Number(item.quantity);
+            const min = Number(item.min_limit);
+            let badgeClass = 'badge-available';
+            let badgeText = 'متوفر';
+
+            if (qty <= 0) {
+              badgeClass = 'badge-out';
+              badgeText = 'نفد';
+            } else if (qty <= min) {
+              badgeClass = 'badge-low';
+              badgeText = 'منخفض';
+            }
+
+            return `
+              <tr>
+                <td><code style="background:var(--slate-100); padding:2px 6px; border-radius:4px; font-size:0.82rem;">${item.sku || '-'}</code></td>
+                <td><strong>${item.name}</strong></td>
+                <td><span style="font-size:0.86rem; color:var(--slate-600);">${catMap.get(item.category_id) || '-'}</span></td>
+                <td><span style="font-size:0.86rem; color:var(--slate-500);">${item.specs || '-'}</span></td>
+                <td><span style="font-size:0.84rem; background:var(--slate-100); padding:3px 8px; border-radius:var(--radius-sm); font-weight:500;">${item.storage_location || '-'}</span></td>
+                <td><strong style="font-size:1.1rem;">${item.quantity}</strong> ${item.unit}</td>
+                <td>${item.min_limit} ${item.unit}</td>
+                <td>${item.reorder_qty || 10} ${item.unit}</td>
+                <td><span class="badge ${badgeClass}">${badgeText}</span></td>
+                <td>
+                  <div style="display:flex; gap:6px;">
+                    <button class="btn btn-secondary btn-icon btn-edit-item" data-id="${item.id}" title="تعديل">
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                      </svg>
+                    </button>
+                    <button class="btn btn-secondary btn-icon btn-quick-item-mov" data-id="${item.id}" title="حركة سريعة">
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+                      </svg>
+                    </button>
+                    <button class="btn btn-secondary btn-icon btn-delete-item" data-id="${item.id}" title="حذف" style="color:var(--rose-600);">
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="3 6 5 6 21 6"></polyline>
+                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                      </svg>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            `;
+          }).join('');
+
+          // Bind table actions
+          tbody.querySelectorAll('.btn-edit-item').forEach(btn => {
+            btn.addEventListener('click', () => openEditItemModal(btn.getAttribute('data-id')));
+          });
+          tbody.querySelectorAll('.btn-quick-item-mov').forEach(btn => {
+            btn.addEventListener('click', () => openQuickMovModalFor(btn.getAttribute('data-id')));
+          });
+          tbody.querySelectorAll('.btn-delete-item').forEach(btn => {
+            btn.addEventListener('click', () => deleteItem(btn.getAttribute('data-id')));
+          });
+        }
+
+        // RENDER: Job Templates
+        function renderJobTemplates() {
+          const container = document.getElementById('job-templates-list');
+          if (!container) return;
+
+          const itemMap = new Map();
+          state.items.forEach(i => itemMap.set(i.id, i));
+
+          container.innerHTML = state.jobTemplates.map(tpl => {
+            const linesHtml = (tpl.lines || []).map(line => {
+              const itm = itemMap.get(line.item_id);
+              const avail = itm ? itm.quantity : 0;
+              const unit = itm ? itm.unit : '';
+              return `
+                <div style="display:flex; justify-content:space-between; font-size:0.86rem; padding:6px 0; border-bottom:1px dashed var(--slate-200);">
+                  <span>• ${itm ? itm.name : 'خامة غير معروفة'}</span>
+                  <span><strong style="color:var(--slate-900);">${line.quantity}</strong> ${unit} <span style="color:var(--slate-500);">(المتوفر: ${avail})</span></span>
+                </div>
+              `;
+            }).join('');
+
+            return `
+              <div style="background:#ffffff; border:1px solid var(--border-color); border-radius:var(--radius-xl); padding:20px; box-shadow:var(--shadow-card); display:flex; flex-direction:column; justify-content:space-between;">
+                <div>
+                  <h4 style="font-size:1.05rem; font-weight:800; margin-bottom:12px; color:var(--slate-900);">${tpl.name}</h4>
+                  <div style="margin-bottom:16px;">${linesHtml}</div>
+                </div>
+                <div style="display:flex; align-items:center; gap:10px; margin-top:14px; padding-top:14px; border-top:1px solid var(--slate-100);">
+                  <input type="number" id="tpl-qty-${tpl.id}" class="form-control" value="1" min="1" max="100" style="width:75px; text-align:center; font-weight:700;">
+                  <button class="btn btn-primary btn-sm btn-exec-template" data-id="${tpl.id}" style="flex:1;">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+                    </svg>
+                    <span>تنفيذ وخصم الخامات</span>
+                  </button>
+                </div>
+              </div>
+            `;
+          }).join('');
+
+          container.querySelectorAll('.btn-exec-template').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const inputEl = document.getElementById(`tpl-qty-${id}`);
+              const mult = Number(inputEl?.value) || 1;
+              executeJobTemplate(id, mult);
+            });
+          });
+        }
+
+        // RENDER: Movements
+        function renderMovementsTable() {
+          const tbody = document.getElementById('movements-table-body');
+          if (!tbody) return;
+
+          const itemMap = new Map();
+          state.items.forEach(i => itemMap.set(i.id, i));
+
+          if (!state.movements || state.movements.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:36px; color:var(--slate-500);">لا توجد حركات مسجلة بالسجل</td></tr>`;
+            return;
+          }
+
+          tbody.innerHTML = state.movements.slice(0, 50).map(m => {
+            const itm = itemMap.get(m.item_id);
+            const isSupply = m.change_amount > 0;
+            const formattedDate = new Date(m.created_at).toLocaleString('ar-EG', { dateStyle: 'short', timeStyle: 'short' });
+
+            return `
+              <tr>
+                <td><span style="font-size:0.82rem; color:var(--slate-500);">${formattedDate}</span></td>
+                <td><strong>${itm ? itm.name : 'خامة محذوفة'}</strong></td>
+                <td>
+                  <span class="badge ${isSupply ? 'badge-available' : 'badge-low'}">
+                    ${isSupply ? 'توريد (+)' : 'صرف / استهلاك (-)'}
+                  </span>
+                </td>
+                <td>
+                  <strong style="color:${isSupply ? 'var(--emerald-600)' : 'var(--rose-600)'}; direction:ltr; display:inline-block; font-size:1rem;">
+                    ${isSupply ? '+' : ''}${m.change_amount} ${itm ? itm.unit : ''}
+                  </strong>
+                </td>
+                <td><span style="font-size:0.86rem; color:var(--slate-500);">${m.quantity_before} ➔ ${m.quantity_after}</span></td>
+                <td><span style="font-size:0.88rem;">${m.reason || '-'}</span></td>
+                <td>
+                  <button class="btn btn-secondary btn-sm btn-undo-mov" data-id="${m.id}" title="تراجع عن هذه الحركة">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <polyline points="1 4 1 10 7 10"></polyline>
+                      <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path>
+                    </svg>
+                    <span>تراجع</span>
+                  </button>
+                </td>
+              </tr>
+            `;
+          }).join('');
+
+          tbody.querySelectorAll('.btn-undo-mov').forEach(btn => {
+            btn.addEventListener('click', () => undoMovement(btn.getAttribute('data-id')));
+          });
+        }
+
+        // RENDER: Stocktake Table
+        function renderStocktakeTable() {
+          const tbody = document.getElementById('stocktake-table-body');
+          if (!tbody) return;
+
+          const activeItems = state.items.filter(i => !i.is_archived);
+          tbody.innerHTML = activeItems.map(item => `
+            <tr>
+              <td><strong>${item.name}</strong> <span style="font-size:0.82rem; color:var(--slate-500);">(${item.specs || ''})</span></td>
+              <td><span id="stk-book-${item.id}" style="font-weight:700; font-size:1.05rem;">${item.quantity}</span> ${item.unit}</td>
+              <td style="max-width:140px;">
+                <input type="number" step="any" min="0" class="form-control stk-actual-input" data-id="${item.id}" value="${item.quantity}" style="width:110px; font-weight:700;">
+              </td>
+              <td><span id="stk-diff-${item.id}" style="font-weight:700; color:var(--slate-500);">0</span></td>
+            </tr>
+          `).join('');
+
+          tbody.querySelectorAll('.stk-actual-input').forEach(inp => {
+            inp.addEventListener('input', () => {
+              const id = inp.getAttribute('data-id');
+              const bookQty = Number(document.getElementById(`stk-book-${id}`)?.textContent) || 0;
+              const actual = Number(inp.value) || 0;
+              const diff = actual - bookQty;
+              const diffEl = document.getElementById(`stk-diff-${id}`);
+              if (diffEl) {
+                diffEl.textContent = (diff > 0 ? `+${diff}` : `${diff}`);
+                diffEl.style.color = diff === 0 ? 'var(--slate-500)' : (diff > 0 ? 'var(--emerald-600)' : 'var(--rose-600)');
+              }
+            });
+          });
+        }
+
+        // RENDER: AI Analysis
+        function renderAiAnalysis() {
+          const tbody = document.getElementById('ai-analysis-table-body');
+          const modalAiTbody = document.getElementById('modal-ai-table-body');
+          const modalAiTip = document.getElementById('modal-ai-tip');
+          if (!tbody) return;
+
+          const activeItems = state.items.filter(i => !i.is_archived);
+          const daysWindow = 30;
+          const cutoff = Date.now() - daysWindow * 24 * 3600 * 1000;
+
+          let criticalItems = [];
+
+          const rowsHtml = activeItems.map(item => {
+            const recentMovs = state.movements.filter(m => m.item_id === item.id && new Date(m.created_at).getTime() >= cutoff);
+            let consumed = 0;
+            recentMovs.forEach(m => {
+              if (m.change_amount < 0) consumed += Math.abs(m.change_amount);
+            });
+
+            const burnRate = consumed > 0 ? Number((consumed / daysWindow).toFixed(2)) : 0;
+            const runway = burnRate > 0 ? Math.floor(item.quantity / burnRate) : null;
+            const recMin = burnRate > 0 ? Math.ceil(burnRate * 10) : item.min_limit;
+
+            let statusBadge = '<span class="badge badge-available">مستقر وآمن</span>';
+            if (item.quantity <= 0 || (runway !== null && runway <= 2)) {
+              statusBadge = '<span class="badge badge-out">حرج جداً</span>';
+              criticalItems.push(item.name);
+            } else if (item.quantity <= item.min_limit || (runway !== null && runway <= 7)) {
+              statusBadge = '<span class="badge badge-low">تحت المراقبة</span>';
+              criticalItems.push(item.name);
+            }
+
+            return `
+              <tr>
+                <td><strong>${item.name}</strong></td>
+                <td>${item.quantity} ${item.unit}</td>
+                <td>${burnRate > 0 ? `${burnRate} ${item.unit} / يوم` : 'استهلاك هادئ'}</td>
+                <td><strong style="color:${runway !== null && runway <= 7 ? 'var(--rose-600)' : 'var(--emerald-700)'};">${runway !== null ? `${runway} يوم` : 'أكثر من 60 يوماً'}</strong></td>
+                <td>${item.min_limit} ${item.unit}</td>
+                <td><strong style="color:var(--indigo-600);">${recMin} ${item.unit}</strong></td>
+                <td>${statusBadge}</td>
+              </tr>
+            `;
+          }).join('');
+
+          tbody.innerHTML = rowsHtml;
+
+          if (modalAiTbody) {
+            modalAiTbody.innerHTML = activeItems.map(item => {
+              const recentMovs = state.movements.filter(m => m.item_id === item.id && new Date(m.created_at).getTime() >= cutoff);
+              let consumed = 0;
+              recentMovs.forEach(m => {
+                if (m.change_amount < 0) consumed += Math.abs(m.change_amount);
+              });
+              const burnRate = consumed > 0 ? Number((consumed / daysWindow).toFixed(2)) : 0;
+              const runway = burnRate > 0 ? Math.floor(item.quantity / burnRate) : null;
+
+              let statusBadge = '<span class="badge badge-available">جاهزية كاملة</span>';
+              if (item.quantity <= 0 || (runway !== null && runway <= 2)) {
+                statusBadge = '<span class="badge badge-out">حرج جداً</span>';
+              } else if (item.quantity <= item.min_limit || (runway !== null && runway <= 7)) {
+                statusBadge = '<span class="badge badge-low">تحت المراقبة</span>';
+              }
+
+              return `
+                <tr>
+                  <td><strong>${item.name}</strong></td>
+                  <td>${item.quantity} ${item.unit}</td>
+                  <td>${burnRate > 0 ? `${burnRate} ${item.unit}/يوم` : 'هادئ'}</td>
+                  <td><strong style="color:${runway !== null && runway <= 7 ? 'var(--rose-600)' : 'var(--emerald-700)'};">${runway !== null ? `${runway} يوم` : 'أكثر من شهرين'}</strong></td>
+                  <td>${statusBadge}</td>
+                </tr>
+              `;
+            }).join('');
+          }
+
+          if (modalAiTip) {
+            if (criticalItems.length > 0) {
+              modalAiTip.innerHTML = `⚠️ يرجى الانتباه: الخامات التالية (<strong>${criticalItems.slice(0, 3).join('، ')}</strong>) أوشكت على النفاد بناءً على وتيرة الاستهلاك الأخيرة؛ ننصح بإصدار أمر توريد لها فوراً لضمان عدم توقف تسليمات الألبومات.`;
+            } else {
+              modalAiTip.innerHTML = `✅ معدلات استهلاك الخامات في نطاق الأمان التام، ولا توجد مؤشرات لنفاد قريب خلال الأسبوعين القادمين. استمر في وتيرة الإنتاج المعتادة.`;
+            }
+          }
+        }
+
+        async function populateSettingsInputs() {
+          const cloudUrl = document.getElementById('set-cloud-url');
+          const gemKey = document.getElementById('set-gemini-key');
+          const mongoInput = document.getElementById('set-mongo-uri');
+          if (cloudUrl) cloudUrl.value = state.settings.cloud_sync_url || '';
+          if (gemKey) gemKey.value = state.settings.gemini_api_key || '';
+          if (mongoInput) mongoInput.value = state.settings.mongo_uri || '';
+
+          // Refresh live Database Status badge
+          try {
+            const res = await fetch('/api/status');
+            if (res.ok) {
+              const info = await res.json();
+              const badge = document.getElementById('db-status-badge');
+              const badgeText = document.getElementById('db-status-badge-text');
+              const detail = document.getElementById('db-status-detail');
+              if (badge && badgeText && detail) {
+                if (info.connectedToRemote) {
+                  badge.className = 'badge badge-available';
+                  badgeText.textContent = 'متصل سحابياً بـ MongoDB Atlas';
+                  detail.innerHTML = `<span style="color:var(--emerald-600); font-weight:600;">✅ متصل ومزامن لحظياً:</span> تم التحقق من الاتصال السحابي (${info.activeItemsCount} صنف نشط، ${info.movementsCount} حركة مسجلة).`;
+                } else {
+                  badge.className = 'badge badge-available';
+                  badgeText.textContent = 'قاعدة البيانات المستمرة نشطة';
+                  detail.innerHTML = `<span style="color:var(--indigo-600); font-weight:600;">📁 التخزين المحلي الدائم:</span> ${info.message}`;
+                }
+              }
+            }
+          } catch (_) {}
+        }
+
+        function renderAll() {
+          renderOwnerView();
+          renderManagerView();
+        }
+
+        // ====================================================================
+        // In-App Confirmation Helper (Replaces window.confirm for iFrames)
+        // ====================================================================
+        let pendingConfirmCallback = null;
+
+        function promptConfirm({ title, message, confirmText, confirmClass, onConfirm }) {
+          const modal = document.getElementById('modal-confirm');
+          const titleEl = document.getElementById('confirm-modal-title');
+          const msgEl = document.getElementById('confirm-modal-message');
+          const okBtn = document.getElementById('btn-confirm-ok');
+          if (!modal || !okBtn) {
+            if (typeof onConfirm === 'function') onConfirm();
+            return;
+          }
+          if (titleEl) titleEl.textContent = title || 'تأكيد الإجراء';
+          if (msgEl) msgEl.textContent = message || 'هل أنت متأكد من تنفيذ هذا الإجراء؟';
+          okBtn.textContent = confirmText || 'تأكيد';
+          okBtn.className = confirmClass ? `btn ${confirmClass}` : 'btn btn-danger';
+          pendingConfirmCallback = onConfirm;
+          modal.classList.add('active');
+        }
+
+        function closeConfirmModal() {
+          const modal = document.getElementById('modal-confirm');
+          if (modal) modal.classList.remove('active');
+          pendingConfirmCallback = null;
+        }
+
+        // ====================================================================
+        // CRUD & Actions (Directly Connected to Database & Realtime Sync)
+        // ====================================================================
+        function openAddItemModal() {
+          document.getElementById('item-modal-title').textContent = '➕ إضافة خامة جديدة';
+          document.getElementById('item-id').value = '';
+          document.getElementById('item-name').value = '';
+          document.getElementById('item-sku').value = '';
+          document.getElementById('item-specs').value = '';
+          const qtyInput = document.getElementById('item-quantity');
+          if (qtyInput) {
+            qtyInput.value = '0';
+            qtyInput.removeAttribute('disabled');
+          }
+          document.getElementById('item-min-limit').value = '5';
+          document.getElementById('item-reorder-qty').value = '10';
+          document.getElementById('item-storage').value = '';
+
+          const err = document.getElementById('item-modal-error');
+          if (err) { err.style.display = 'none'; err.textContent = ''; }
+
+          populateSelectOptions();
+          document.getElementById('modal-item').classList.add('active');
+        }
+
+        function openEditItemModal(itemId) {
+          const item = state.items.find(i => i.id === itemId);
+          if (!item) return;
+
+          document.getElementById('item-modal-title').textContent = '✏️ تعديل بيانات الخامة';
+          document.getElementById('item-id').value = item.id;
+          document.getElementById('item-name').value = item.name;
+          document.getElementById('item-sku').value = item.sku || '';
+          document.getElementById('item-specs').value = item.specs || '';
+          document.getElementById('item-unit').value = item.unit || 'رزمة';
+          const qtyInput = document.getElementById('item-quantity');
+          if (qtyInput) {
+            qtyInput.value = item.quantity;
+            qtyInput.setAttribute('disabled', 'true');
+          }
+          document.getElementById('item-min-limit').value = item.min_limit;
+          document.getElementById('item-reorder-qty').value = item.reorder_qty || 10;
+          document.getElementById('item-storage').value = item.storage_location || '';
+
+          const err = document.getElementById('item-modal-error');
+          if (err) { err.style.display = 'none'; err.textContent = ''; }
+
+          populateSelectOptions(item.category_id, item.supplier_id);
+          document.getElementById('modal-item').classList.add('active');
+        }
+
+        function populateSelectOptions(selectedCat, selectedSup) {
+          const catSelect = document.getElementById('item-category');
+          const supSelect = document.getElementById('item-supplier');
+          if (catSelect) {
+            catSelect.innerHTML = state.categories.map(c => `
+              <option value="${c.id}" ${c.id === selectedCat ? 'selected' : ''}>${c.name}</option>
+            `).join('');
+          }
+          if (supSelect) {
+            supSelect.innerHTML = `<option value="">بدون مورد محدد</option>` + state.suppliers.map(s => `
+              <option value="${s.id}" ${s.id === selectedSup ? 'selected' : ''}>${s.name}</option>
+            `).join('');
+          }
+        }
+
+        async function saveItemFromModal() {
+          const errorEl = document.getElementById('item-modal-error');
+          if (errorEl) { errorEl.style.display = 'none'; errorEl.textContent = ''; }
+
+          const id = document.getElementById('item-id').value;
+          const name = document.getElementById('item-name').value.trim();
+          if (!name) {
+            if (errorEl) {
+              errorEl.style.display = 'block';
+              errorEl.textContent = '⚠️ يرجى كتابة اسم الخامة / الصنف أولاً قبل الحفظ';
+            } else {
+              showToast('⚠️ يرجى إدخال اسم الخامة أو الصنف');
+            }
+            return;
+          }
+
+          let sku = document.getElementById('item-sku').value.trim();
+          if (!sku) {
+            sku = 'SKU-' + Math.random().toString(36).substring(2, 7).toUpperCase();
+          }
+
+          const category_id = document.getElementById('item-category').value;
+          const specs = document.getElementById('item-specs').value.trim();
+          const unit = document.getElementById('item-unit').value;
+          const quantity = Number(document.getElementById('item-quantity').value) || 0;
+          const min_limit = Number(document.getElementById('item-min-limit').value) || 5;
+          const reorder_qty = Number(document.getElementById('item-reorder-qty').value) || 10;
+          const storage_location = document.getElementById('item-storage').value.trim();
+          const supplier_id = document.getElementById('item-supplier').value || undefined;
+
+          const submitBtn = document.getElementById('btn-save-item');
+          if (submitBtn) submitBtn.disabled = true;
+
+          try {
+            if (id) {
+              // Update item metadata via PUT
+              const updatePayload = {
+                sku, name, category_id, specs, unit, min_limit, reorder_qty, storage_location, supplier_id
+              };
+              const res = await fetch(`/api/items/${encodeURIComponent(id)}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(updatePayload)
+              });
+              const resJson = await res.json();
+              if (!res.ok) {
+                if (errorEl) {
+                  errorEl.style.display = 'block';
+                  errorEl.textContent = '⚠️ ' + (resJson.error || 'فشل تحديث بيانات الخامة');
+                } else {
+                  showToast('⚠️ ' + (resJson.error || 'فشل تحديث بيانات الخامة'));
+                }
+                return;
+              }
+              const idx = state.items.findIndex(i => i.id === id);
+              if (idx !== -1 && resJson.item) {
+                state.items[idx] = resJson.item;
+              }
+              showToast('تم تعديل بيانات الخامة بنجاح');
+            } else {
+              // Create new item via POST
+              const createPayload = {
+                sku, name, category_id, specs, unit, quantity, min_limit, reorder_qty, storage_location, supplier_id,
+                is_archived: false
+              };
+              const res = await fetch('/api/items', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(createPayload)
+              });
+              const resJson = await res.json();
+              if (!res.ok) {
+                if (errorEl) {
+                  errorEl.style.display = 'block';
+                  errorEl.textContent = '⚠️ ' + (resJson.error || 'فشل إضافة الخامة');
+                } else {
+                  showToast('⚠️ ' + (resJson.error || 'فشل إضافة الخامة'));
+                }
+                return;
+              }
+              if (resJson.item) {
+                state.items.unshift(resJson.item);
+              }
+              showToast('تمت إضافة الخامة الجديدة بنجاح');
+            }
+
+            document.getElementById('modal-item').classList.remove('active');
+            saveLocalState();
+            renderAll();
+          } catch (err) {
+            showToast('⚠️ تعذر الاتصال بالخادم لحفظ التغييرات');
+          } finally {
+            if (submitBtn) submitBtn.disabled = false;
+          }
+        }
+
+        async function deleteItem(id) {
+          const item = state.items.find(i => i.id === id);
+          if (!item) return;
+
+          promptConfirm({
+            title: 'حذف خامة من المخزن',
+            message: `هل أنت متأكد من حذف الخامة "${item.name}" من قاعدة البيانات؟ لا يمكن حذف الخامات التي تحتوي على حركات مخزنية مسجلة.`,
+            confirmText: 'نعم، حذف نهائي',
+            confirmClass: 'btn-danger',
+            onConfirm: async () => {
+              try {
+                const res = await fetch(`/api/items/${encodeURIComponent(id)}`, { method: 'DELETE' });
+                const resJson = await res.json();
+                if (!res.ok) {
+                  showToast('⚠️ ' + (resJson.error || 'تعذر حذف الخامة'));
+                  return;
+                }
+                state.items = state.items.filter(i => i.id !== id);
+                saveLocalState();
+                renderAll();
+                showToast(`تم حذف الخامة "${item.name}" بنجاح`);
+              } catch (e) {
+                showToast('⚠️ تعذر الاتصال بالخادم لإتمام الحذف');
+              }
+            }
+          });
+        }
+
+        // Quick Movement
+        function openQuickMovModalFor(itemId) {
+          const select = document.getElementById('mov-item-select');
+          if (select) {
+            select.innerHTML = state.items.filter(i => !i.is_archived).map(i => `
+              <option value="${i.id}" ${i.id === itemId ? 'selected' : ''}>${i.name} (الرصيد: ${i.quantity} ${i.unit})</option>
+            `).join('');
+          }
+          document.getElementById('mov-amount').value = '';
+          document.getElementById('mov-reason').value = '';
+          setMovType('supply');
+          document.getElementById('modal-quick-movement').classList.add('active');
+        }
+
+        function setMovType(type) {
+          activeMovType = type;
+          const supBtn = document.getElementById('mov-type-supply');
+          const conBtn = document.getElementById('mov-type-consume');
+          if (type === 'supply') {
+            supBtn.className = 'btn btn-whatsapp';
+            conBtn.className = 'btn btn-secondary';
+          } else {
+            supBtn.className = 'btn btn-secondary';
+            conBtn.className = 'btn btn-danger';
+          }
+        }
+
+        async function executeQuickMovement() {
+          const itemId = document.getElementById('mov-item-select').value;
+          const rawAmt = Number(document.getElementById('mov-amount').value);
+          const reason = document.getElementById('mov-reason').value.trim() || (activeMovType === 'supply' ? 'توريد سريع' : 'استهلاك تشغيل');
+
+          if (isNaN(rawAmt) || rawAmt <= 0) {
+            showToast('⚠️ يرجى إدخال كمية صحيحة أكبر من الصفر');
+            return;
+          }
+
+          const item = state.items.find(i => i.id === itemId);
+          if (!item) return;
+
+          const changeAmount = activeMovType === 'supply' ? rawAmt : -rawAmt;
+
+          const submitBtn = document.getElementById('btn-confirm-movement');
+          if (submitBtn) submitBtn.disabled = true;
+
+          try {
+            const res = await fetch('/api/movements', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                itemId: item.id,
+                changeAmount,
+                type: activeMovType,
+                reason,
+                createdBy: 'مدير المخزن'
+              })
+            });
+            const resJson = await res.json();
+            if (!res.ok) {
+              showToast('⚠️ ' + (resJson.error || 'تعذر تسجيل الحركة'));
+              return;
+            }
+
+            if (resJson.movement) {
+              item.quantity = resJson.newQuantity;
+              state.movements.unshift(resJson.movement);
+            }
+            document.getElementById('modal-quick-movement').classList.remove('active');
+            saveLocalState();
+            renderAll();
+            showToast(`تم تسجيل الحركة بنجاح: الرصيد الجديد (${resJson.newQuantity} ${item.unit})`);
+          } catch (e) {
+            showToast('⚠️ تعذر الاتصال بالخادم لتسجيل الحركة');
+          } finally {
+            if (submitBtn) submitBtn.disabled = false;
+          }
+        }
+
+        async function undoMovement(movementId) {
+          const mov = state.movements.find(m => m.id === movementId);
+          if (!mov) return;
+
+          const item = state.items.find(i => i.id === mov.item_id);
+          const compensating = -mov.change_amount;
+
+          promptConfirm({
+            title: 'تأكيد التراجع عن الحركة',
+            message: `هل تريد بالتأكيد التراجع عن حركة "${mov.reason || 'حركة'}" وعكس الكمية (${compensating > 0 ? '+' : ''}${compensating} ${item ? item.unit : ''})؟`,
+            confirmText: 'نعم، تراجع',
+            confirmClass: 'btn-primary',
+            onConfirm: async () => {
+              try {
+                const res = await fetch('/api/movements/undo', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ movementId })
+                });
+                const resJson = await res.json();
+                if (!res.ok) {
+                  showToast('⚠️ ' + (resJson.error || 'تعذر التراجع عن الحركة'));
+                  return;
+                }
+
+                if (item && typeof resJson.newQuantity === 'number') {
+                  item.quantity = resJson.newQuantity;
+                }
+                if (resJson.undoMovement) {
+                  state.movements.unshift(resJson.undoMovement);
+                }
+                saveLocalState();
+                renderAll();
+                showToast(`تم التراجع بنجاح. الرصيد الحالي: ${resJson.newQuantity} ${item ? item.unit : ''}`);
+              } catch (e) {
+                showToast('⚠️ تعذر الاتصال بالخادم لإتمام التراجع');
+              }
+            }
+          });
+        }
+
+        async function executeJobTemplate(templateId, mult) {
+          const tpl = state.jobTemplates.find(t => t.id === templateId);
+          if (!tpl) return;
+
+          promptConfirm({
+            title: 'تأكيد تنفيذ أمر التشغيل',
+            message: `هل تريد خصم خامات تنفيذ: "${tpl.name}" بعدد (${mult} طلبية) من المخزن؟`,
+            confirmText: 'خصم الخامات الآن',
+            confirmClass: 'btn-primary',
+            onConfirm: async () => {
+              try {
+                const res = await fetch('/api/job-templates/apply', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ templateId, multiplier: mult })
+                });
+                const resJson = await res.json();
+                if (!res.ok) {
+                  showToast('⚠️ ' + (resJson.error || 'تعذر تنفيذ أمر التشغيل'));
+                  return;
+                }
+
+                if (Array.isArray(resJson.updatedItems)) {
+                  resJson.updatedItems.forEach(u => {
+                    const found = state.items.find(i => i.id === u.id);
+                    if (found) found.quantity = u.quantity;
+                  });
+                }
+                if (Array.isArray(resJson.movements)) {
+                  state.movements.unshift(...resJson.movements);
+                }
+                saveLocalState();
+                renderAll();
+                showToast(`تم خصم خامات (${tpl.name}) بنجاح`);
+              } catch (e) {
+                showToast('⚠️ تعذر الاتصال بالخادم لتنفيذ أمر التشغيل');
+              }
+            }
+          });
+        }
+
+        async function applyStocktake() {
+          const inputs = document.querySelectorAll('.stk-actual-input');
+          const adjustments = [];
+          const itemMap = new Map();
+          state.items.forEach(i => itemMap.set(i.id, i));
+
+          inputs.forEach(inp => {
+            const id = inp.getAttribute('data-id');
+            const actual = Number(inp.value);
+            const itm = itemMap.get(id);
+
+            if (itm && !isNaN(actual) && actual !== itm.quantity) {
+              adjustments.push({
+                itemId: id,
+                actualQuantity: actual,
+                reason: `تسوية جرد فعلي (${actual - itm.quantity > 0 ? '+' : ''}${actual - itm.quantity} ${itm.unit})`
+              });
+            }
+          });
+
+          if (adjustments.length === 0) {
+            showToast('الكميات الفعلية مطابقة تماماً، لم يتم إجراء أي تسويات');
+            return;
+          }
+
+          const btn = document.getElementById('btn-apply-stocktake');
+          if (btn) btn.disabled = true;
+
+          try {
+            const res = await fetch('/api/stocktake', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ adjustments })
+            });
+            const resJson = await res.json();
+            if (!res.ok) {
+              showToast('⚠️ ' + (resJson.error || 'تعذر تطبيق الجرد الفعلي'));
+              return;
+            }
+
+            if (Array.isArray(resJson.updatedItems)) {
+              resJson.updatedItems.forEach(u => {
+                const found = state.items.find(i => i.id === u.id);
+                if (found) found.quantity = u.quantity;
+              });
+            }
+            if (Array.isArray(resJson.movements)) {
+              state.movements.unshift(...resJson.movements);
+            }
+            saveLocalState();
+            renderAll();
+            showToast(`تم اعتماد الجرد الفعلي وتسوية ${adjustments.length} خامة بنجاح`);
+          } catch (e) {
+            showToast('⚠️ تعذر الاتصال بالخادم لتطبيق الجرد');
+          } finally {
+            if (btn) btn.disabled = false;
+          }
+        }
+
+        async function applyAiSmartThresholds() {
+          const daysWindow = 30;
+          const cutoff = Date.now() - daysWindow * 24 * 3600 * 1000;
+          let updated = 0;
+
+          state.items.filter(i => !i.is_archived).forEach(item => {
+            const recent = state.movements.filter(m => m.item_id === item.id && new Date(m.created_at).getTime() >= cutoff);
+            let consumed = 0;
+            recent.forEach(m => {
+              if (m.change_amount < 0) consumed += Math.abs(m.change_amount);
+            });
+
+            if (consumed > 0) {
+              const burnRate = consumed / daysWindow;
+              const newMin = Math.ceil(burnRate * 10);
+              if (newMin !== item.min_limit) {
+                item.min_limit = newMin;
+                item.reorder_qty = Math.ceil(burnRate * 15);
+                updated++;
+              }
+            }
+          });
+
+          await saveStateAndSync();
+          renderAll();
+          showToast(`تم تحديث حدود الأمان لـ ${updated} خامة بناءً على معدلات الاستهلاك الفعلي`);
+        }
+
+        async function requestGeminiReport() {
+          const reportBox = document.getElementById('gemini-report-box');
+          const btn = document.getElementById('btn-run-gemini-ai');
+          reportBox.style.display = 'block';
+          reportBox.textContent = '⏳ جاري استشارة الذكاء الاصطناعي وتحليل أنماط استهلاك الاستوديو بدقة...';
+          btn.disabled = true;
+
+          try {
+            const res = await fetch('/api/ai/consultation', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ apiKey: state.settings.gemini_api_key })
+            });
+
+            const data = await res.json();
+            if (data.success && data.report) {
+              reportBox.textContent = data.report;
+            } else {
+              reportBox.textContent = '⚠️ ' + (data.error || 'تعذر الحصول على التقرير. تأكد من إدخال مفتاح Gemini API في الإعدادات.');
+            }
+          } catch (err) {
+            reportBox.textContent = '⚠️ تعذر الاتصال بخدمة الذكاء الاصطناعي. يرجى التأكد من تشغيل الخادم وتوفير مفتاح Gemini API Key.';
+          } finally {
+            btn.disabled = false;
+          }
+        }
+
+        // WhatsApp Share
+        function shareWhatsApp() {
+          const traffic = getTrafficStatus();
+          const capacities = getProductionCapacities();
+          const urgent = state.items.filter(i => !i.is_archived && Number(i.quantity) <= Number(i.min_limit));
+          const dateStr = new Date().toLocaleDateString('ar-EG', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+
+          let msg = `📸 *تقرير جاهزية مخزون الاستوديو* (${dateStr})\n`;
+          msg += `الحالة العامة: ${traffic.icon} ${traffic.title}\n\n`;
+
+          msg += `🎯 *قدرة الإنتاج الجاهزة للتسليم فوراً:*\n`;
+          capacities.forEach(c => {
+            msg += `• ${c.name}: جاهز لإنتاج (${c.units} قطعة) [عنق الزجاجة: ${c.bottleneckName} - متبقي ${c.bottleneckQty}]\n`;
+          });
+
+          msg += `\n⚠️ *الأصناف الحرجة التي تحتاج طلب سريع:*\n`;
+          if (urgent.length > 0) {
+            urgent.slice(0, 7).forEach(itm => {
+              msg += `• ${itm.name}: الرصيد الحالي (${itm.quantity} ${itm.unit}) - حد الأمان (${itm.min_limit})\n`;
+            });
+            if (urgent.length > 7) {
+              msg += `• بالإضافة إلى ${urgent.length - 7} أصناف أخرى.\n`;
+            }
+          } else {
+            msg += `• جميع الخامات متوفرة بأمان ولا توجد نواقص عاجلة.\n`;
+          }
+
+          msg += `\n_تم الإنشاء تلقائياً عبر نظام إدارة مخزون الاستوديو_`;
+
+          const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(msg)}`;
+          window.open(url, '_blank');
+        }
+
+        // Navigation & Secure PIN System
+        function switchView(viewName) {
+          const ownerView = document.getElementById('view-owner');
+          const mgrView = document.getElementById('view-manager');
+          const mgrHeader = document.getElementById('manager-header-controls');
+          const ownerHeader = document.getElementById('owner-header-controls');
+          const discreetBtn = document.getElementById('discreet-manager-trigger');
+
+          if (viewName === 'manager') {
+            ownerView.style.display = 'none';
+            mgrView.style.display = 'block';
+            mgrHeader.style.display = 'flex';
+            if (ownerHeader) ownerHeader.style.display = 'none';
+            if (discreetBtn) discreetBtn.style.display = 'none';
+            renderManagerView();
+          } else {
+            ownerView.style.display = 'block';
+            mgrView.style.display = 'none';
+            mgrHeader.style.display = 'none';
+            if (ownerHeader) ownerHeader.style.display = 'flex';
+            if (discreetBtn) discreetBtn.style.display = 'flex';
+            renderOwnerView();
+          }
+        }
+
+        function checkSession() {
+          fetch('/api/auth/me')
+            .then(res => res.json())
+            .then(data => {
+              if (data && data.manager) {
+                switchView('manager');
+              } else {
+                switchView('owner');
+              }
+            })
+            .catch(() => {
+              switchView('owner');
+            });
+        }
+
+        function normalizeDigits(str) {
+          return (str || '').replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d)).replace(/\D/g, '');
+        }
+
+        function getEnteredPin() {
+          const cells = Array.from(document.querySelectorAll('.pin-cell'));
+          let pin = '';
+          cells.forEach(c => {
+            pin += normalizeDigits(c.value);
+          });
+          return pin;
+        }
+
+        function clearPinCells() {
+          const cells = Array.from(document.querySelectorAll('.pin-cell'));
+          cells.forEach(c => { c.value = ''; });
+          if (cells[0]) cells[0].focus();
+        }
+
+        function openPinModal() {
+          const modal = document.getElementById('modal-pin');
+          const card = document.getElementById('pin-modal-card');
+          const errorMsg = document.getElementById('pin-error-msg');
+          clearPinCells();
+          if (errorMsg) errorMsg.textContent = '';
+          if (card) card.classList.remove('shake');
+          if (modal) modal.classList.add('active');
+          setTimeout(() => {
+            const firstCell = document.querySelector('.pin-cell');
+            if (firstCell) firstCell.focus();
+          }, 120);
+        }
+
+        function closePinModal() {
+          const modal = document.getElementById('modal-pin');
+          if (modal) modal.classList.remove('active');
+          clearPinCells();
+          const errorMsg = document.getElementById('pin-error-msg');
+          if (errorMsg) errorMsg.textContent = '';
+        }
+
+        async function verifyAndSubmitPin() {
+          const entered = getEnteredPin();
+          const errorMsg = document.getElementById('pin-error-msg');
+          const card = document.getElementById('pin-modal-card');
+          const submitBtn = document.getElementById('btn-submit-pin');
+
+          if (entered.length !== 6) {
+            if (errorMsg) errorMsg.textContent = 'يرجى إدخال رمز الدخول المكون من 6 أرقام';
+            return;
+          }
+
+          if (submitBtn) submitBtn.disabled = true;
+
+          try {
+            const res = await fetch('/api/auth/login', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ pin: entered })
+            });
+            const resJson = await res.json();
+
+            if (res.ok && resJson.success) {
+              closePinModal();
+              await fetchRemoteState();
+              switchView('manager');
+              showToast('✅ تم تسجيل الدخول بنجاح كمدير للمخزن');
+              if (resJson.must_change_pin) {
+                setTimeout(() => {
+                  showToast('⚠️ تنبيه أمني: يرجى تغيير رمز الدخول الافتراضي من تبويب الإعدادات فوراً');
+                }, 1500);
+              }
+            } else {
+              if (card) {
+                card.classList.remove('shake');
+                void card.offsetWidth;
+                card.classList.add('shake');
+              }
+              if (errorMsg) {
+                if (res.status === 429) {
+                  errorMsg.textContent = `❌ ${resJson.error || 'تم قفل الحساب مؤقتاً لتكرار المحاولات الخاطئة'}`;
+                } else {
+                  errorMsg.textContent = `❌ ${resJson.error || 'رمز الدخول غير صحيح'}`;
+                }
+              }
+              clearPinCells();
+            }
+          } catch (e) {
+            if (errorMsg) errorMsg.textContent = '❌ تعذر الاتصال بالخادم، يرجى المحاولة لاحقاً';
+          } finally {
+            if (submitBtn) submitBtn.disabled = false;
+          }
+        }
+
+        function logoutManager() {
+          promptConfirm({
+            title: 'قفل وضع المدير',
+            message: 'هل تريد تسجيل الخروج والعودة لشاشة العرض العامة؟',
+            confirmText: 'تسجيل الخروج',
+            confirmClass: 'btn-secondary',
+            onConfirm: async () => {
+              try {
+                await fetch('/api/auth/logout', { method: 'POST' });
+              } catch (_) {}
+              switchView('owner');
+              showToast('تم قفل وضع المدير بنجاح والعودة لشاشة العرض');
+            }
+          });
+        }
+
+        function setupPinCellInputs() {
+          const cells = Array.from(document.querySelectorAll('.pin-cell'));
+          const eyeBtn = document.getElementById('btn-toggle-pin-visibility');
+          const eyeOpen = document.getElementById('eye-icon-open');
+          const eyeClosed = document.getElementById('eye-icon-closed');
+
+          cells.forEach((cell, idx) => {
+            cell.addEventListener('input', (e) => {
+              const normalized = normalizeDigits(e.target.value);
+              e.target.value = normalized ? normalized[0] : '';
+              const errorMsg = document.getElementById('pin-error-msg');
+              if (errorMsg) errorMsg.textContent = '';
+
+              if (e.target.value && idx < cells.length - 1) {
+                cells[idx + 1].focus();
+              }
+
+              if (getEnteredPin().length === 6) {
+                setTimeout(verifyAndSubmitPin, 80);
+              }
+            });
+
+            cell.addEventListener('keydown', (e) => {
+              if (e.key === 'Backspace' && !cell.value && idx > 0) {
+                cells[idx - 1].focus();
+                cells[idx - 1].value = '';
+              } else if (e.key === 'ArrowLeft' && idx < cells.length - 1) {
+                cells[idx + 1].focus();
+              } else if (e.key === 'ArrowRight' && idx > 0) {
+                cells[idx - 1].focus();
+              } else if (e.key === 'Enter') {
+                e.preventDefault();
+                verifyAndSubmitPin();
+              }
+            });
+
+            cell.addEventListener('paste', (e) => {
+              e.preventDefault();
+              const pasted = normalizeDigits(e.clipboardData?.getData('text') || '');
+              if (!pasted) return;
+              for (let i = 0; i < cells.length; i++) {
+                cells[i].value = pasted[i] || '';
+              }
+              const nextFocus = Math.min(pasted.length, cells.length - 1);
+              cells[nextFocus].focus();
+              if (getEnteredPin().length === 6) {
+                setTimeout(verifyAndSubmitPin, 80);
+              }
+            });
+          });
+
+          // Eye toggle
+          eyeBtn?.addEventListener('click', () => {
+            const isPassword = cells[0]?.getAttribute('type') === 'password';
+            const newType = isPassword ? 'text' : 'password';
+            cells.forEach(c => c.setAttribute('type', newType));
+            if (eyeOpen && eyeClosed) {
+              eyeOpen.style.display = isPassword ? 'none' : 'block';
+              eyeClosed.style.display = isPassword ? 'block' : 'none';
+            }
+          });
+
+          // Virtual Keypad clicks
+          document.querySelectorAll('.pin-key[data-key]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const digit = btn.getAttribute('data-key');
+              const emptyCell = cells.find(c => !c.value);
+              if (emptyCell) {
+                emptyCell.value = digit;
+                const nextIdx = cells.indexOf(emptyCell) + 1;
+                if (nextIdx < cells.length) cells[nextIdx].focus();
+                const errorMsg = document.getElementById('pin-error-msg');
+                if (errorMsg) errorMsg.textContent = '';
+                if (getEnteredPin().length === 6) {
+                  setTimeout(verifyAndSubmitPin, 80);
+                }
+              }
+            });
+          });
+
+          document.getElementById('btn-pin-key-clear')?.addEventListener('click', () => {
+            clearPinCells();
+            const errorMsg = document.getElementById('pin-error-msg');
+            if (errorMsg) errorMsg.textContent = '';
+          });
+
+          document.getElementById('btn-pin-key-del')?.addEventListener('click', () => {
+            const filledCells = cells.filter(c => c.value);
+            if (filledCells.length > 0) {
+              const last = filledCells[filledCells.length - 1];
+              last.value = '';
+              last.focus();
+              const errorMsg = document.getElementById('pin-error-msg');
+              if (errorMsg) errorMsg.textContent = '';
+            }
+          });
+        }
+
+        // Event Listeners Binding
+        function setupEventListeners() {
+          // Open PIN modal triggers (Header button & Discreet trigger)
+          document.getElementById('btn-header-login')?.addEventListener('click', openPinModal);
+          document.getElementById('discreet-manager-trigger')?.addEventListener('click', openPinModal);
+
+          // Auto-sync when window / browser tab regains focus
+          window.addEventListener('focus', () => {
+            fetchRemoteState();
+          });
+
+          // PIN Modal close buttons
+          document.getElementById('btn-close-pin-x')?.addEventListener('click', closePinModal);
+          document.getElementById('btn-close-pin-cancel')?.addEventListener('click', closePinModal);
+          document.getElementById('modal-pin')?.addEventListener('click', (e) => {
+            if (e.target.id === 'modal-pin') closePinModal();
+          });
+          document.getElementById('btn-submit-pin')?.addEventListener('click', verifyAndSubmitPin);
+
+          // Dedicated AI Modal for Owner View
+          document.getElementById('btn-open-ai-modal')?.addEventListener('click', () => {
+            renderAiAnalysis();
+            document.getElementById('modal-ai-dashboard').classList.add('active');
+          });
+          document.getElementById('btn-close-ai-x')?.addEventListener('click', () => {
+            document.getElementById('modal-ai-dashboard').classList.remove('active');
+          });
+          document.getElementById('btn-close-ai-footer')?.addEventListener('click', () => {
+            document.getElementById('modal-ai-dashboard').classList.remove('active');
+          });
+
+          // Keyboard Esc closes modals & Enter verifies PIN
+          window.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+              closePinModal();
+              document.querySelectorAll('.modal-backdrop').forEach(m => m.classList.remove('active'));
+            }
+            if (e.key === 'Enter') {
+              if (document.getElementById('modal-pin')?.classList.contains('active')) {
+                verifyAndSubmitPin();
+              }
+            }
+          });
+
+          // Manager Logout
+          document.getElementById('btn-lock-manager')?.addEventListener('click', logoutManager);
+
+          // WhatsApp Share
+          document.getElementById('btn-whatsapp-share')?.addEventListener('click', shareWhatsApp);
+
+          // Owner filters
+          document.getElementById('owner-search')?.addEventListener('input', renderOwnerTable);
+          document.getElementById('owner-filter-cat')?.addEventListener('change', renderOwnerTable);
+          document.getElementById('owner-filter-status')?.addEventListener('change', renderOwnerTable);
+
+          // Manager filters
+          document.getElementById('mgr-search')?.addEventListener('input', renderManagerItemsTable);
+          document.getElementById('mgr-filter-cat')?.addEventListener('change', renderManagerItemsTable);
+          document.getElementById('mgr-filter-status')?.addEventListener('change', renderManagerItemsTable);
+
+          // Manager navigation tabs
+          document.querySelectorAll('.nav-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+              document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+              document.querySelectorAll('.tab-pane').forEach(p => p.style.display = 'none');
+              tab.classList.add('active');
+              const target = document.getElementById(tab.getAttribute('data-tab'));
+              if (target) target.style.display = 'block';
+            });
+          });
+
+          // Items Modal
+          document.getElementById('btn-add-item')?.addEventListener('click', openAddItemModal);
+          document.getElementById('btn-close-item-x')?.addEventListener('click', () => document.getElementById('modal-item').classList.remove('active'));
+          document.getElementById('btn-close-item-cancel')?.addEventListener('click', () => document.getElementById('modal-item').classList.remove('active'));
+          document.getElementById('btn-save-item')?.addEventListener('click', saveItemFromModal);
+          document.getElementById('form-item')?.addEventListener('submit', (e) => {
+            e.preventDefault();
+            saveItemFromModal();
+          });
+
+          // In-App Confirmation Modal Handlers
+          document.getElementById('btn-confirm-cancel')?.addEventListener('click', closeConfirmModal);
+          document.getElementById('btn-confirm-ok')?.addEventListener('click', async () => {
+            const cb = pendingConfirmCallback;
+            closeConfirmModal();
+            if (typeof cb === 'function') {
+              await cb();
+            }
+          });
+          document.getElementById('modal-confirm')?.addEventListener('click', (e) => {
+            if (e.target.id === 'modal-confirm') closeConfirmModal();
+          });
+
+          // Quick Movement Modal
+          document.getElementById('btn-quick-movement')?.addEventListener('click', () => openQuickMovModalFor(state.items[0]?.id));
+          document.getElementById('btn-close-movement-x')?.addEventListener('click', () => document.getElementById('modal-quick-movement').classList.remove('active'));
+          document.getElementById('btn-close-movement-cancel')?.addEventListener('click', () => document.getElementById('modal-quick-movement').classList.remove('active'));
+          document.getElementById('mov-type-supply')?.addEventListener('click', () => setMovType('supply'));
+          document.getElementById('mov-type-consume')?.addEventListener('click', () => setMovType('consume'));
+          document.getElementById('btn-confirm-movement')?.addEventListener('click', executeQuickMovement);
+
+          // Job Templates & Stocktake
+          document.getElementById('btn-apply-stocktake')?.addEventListener('click', applyStocktake);
+          document.getElementById('btn-apply-ai-thresholds')?.addEventListener('click', applyAiSmartThresholds);
+          document.getElementById('btn-run-gemini-ai')?.addEventListener('click', requestGeminiReport);
+
+          // Settings: PIN Change (Discrete 6 digits, scrypt backed)
+          document.getElementById('btn-save-new-pin')?.addEventListener('click', async () => {
+            const feedbackEl = document.getElementById('pin-change-feedback');
+            const cur = normalizeDigits(document.getElementById('set-current-pin').value);
+            const nw = normalizeDigits(document.getElementById('set-new-pin').value);
+            const conf = normalizeDigits(document.getElementById('set-confirm-pin').value);
+
+            const showPinError = (msg) => {
+              if (feedbackEl) {
+                feedbackEl.style.display = 'block';
+                feedbackEl.style.background = 'var(--rose-50)';
+                feedbackEl.style.color = 'var(--rose-700)';
+                feedbackEl.style.border = '1px solid var(--rose-200)';
+                feedbackEl.textContent = '❌ ' + msg;
+              }
+              showToast(msg);
+            };
+
+            const showPinSuccess = (msg) => {
+              if (feedbackEl) {
+                feedbackEl.style.display = 'block';
+                feedbackEl.style.background = 'var(--emerald-50)';
+                feedbackEl.style.color = 'var(--emerald-800)';
+                feedbackEl.style.border = '1px solid var(--emerald-200)';
+                feedbackEl.textContent = '✅ ' + msg;
+              }
+              showToast(msg);
+            };
+
+            if (!cur || cur.length !== 6) {
+              showPinError('يرجى كتابة رمز الدخول الحالي المكون من 6 أرقام');
+              return;
+            }
+
+            if (!nw || nw.length !== 6) {
+              showPinError('رمز الدخول الجديد يجب أن يتكون من 6 أرقام تحديداً');
+              return;
+            }
+
+            if (nw !== conf) {
+              showPinError('الرمز الجديد وتأكيده غير متطابقين، يرجى كتابتهما بدقة');
+              return;
+            }
+
+            try {
+              const res = await fetch('/api/auth/change-pin', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ currentPin: cur, newPin: nw })
+              });
+              const resJson = await res.json();
+              if (!res.ok || !resJson.success) {
+                showPinError(resJson.error || 'تعذر تغيير الرمز السري');
+                return;
+              }
+
+              document.getElementById('set-current-pin').value = '';
+              document.getElementById('set-new-pin').value = '';
+              document.getElementById('set-confirm-pin').value = '';
+              showPinSuccess('تم تغيير الرمز السري بنجاح وتحديثه مشفراً في قاعدة البيانات');
+            } catch (netErr) {
+              showPinError('تعذر الاتصال بالخادم لتغيير الرمز');
+            }
+          });
+
+          // Settings: Backup Export / Import
+          document.getElementById('btn-export-backup')?.addEventListener('click', () => {
+            const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = `studio-inventory-backup-${new Date().toISOString().slice(0, 10)}.json`;
+            a.click();
+          });
+
+          document.getElementById('input-import-backup')?.addEventListener('change', (e) => {
+            const file = e.target.files?.[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = async (ev) => {
+              try {
+                const parsed = JSON.parse(ev.target?.result);
+                if (parsed.items && Array.isArray(parsed.items)) {
+                  state = { ...DEFAULT_STATE, ...parsed };
+                  saveLocalState();
+                  renderAll();
+                  showToast('تم استعادة النسخة الاحتياطية بنجاح في الواجهة');
+                } else {
+                  showToast('⚠️ ملف النسخة الاحتياطية غير صالح');
+                }
+              } catch (_) {
+                showToast('⚠️ حدث خطأ أثناء قراءة ملف JSON');
+              }
+            };
+            reader.readAsText(file);
+          });
+        }
+
+        // Initialize App
+        loadLocalState();
+        setupPinCellInputs();
+        setupEventListeners();
+        checkSession();
+        fetchRemoteState();
+        startSyncPolling();
+        populateSettingsInputs();
+      })();
+    </script>
+  </body>
+</html>
