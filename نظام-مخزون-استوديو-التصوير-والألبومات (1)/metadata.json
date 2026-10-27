@@ -1,0 +1,6 @@
+{
+  "name": "إدارة مخزون",
+  "description": "إدارة مخزون",
+  "requestFramePermissions": ["camera"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
